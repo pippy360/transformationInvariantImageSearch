@@ -161,7 +161,7 @@ void compareTwoImages(string imageName1, string imageName2) {
 int main(int argc, char* argv[])
 {
     if (argc < 3){
-        printf("error: no args!!!\n");
+        printf("error: no args!!!\n Example:\nTo insert an image run the following command:\n ./runDemo insert inputImages/cat1.png\nTo query the database with an image run the following command:\n ./runDemo lookup inputImages/cat1.png\n");
         return -1;
     }
 
