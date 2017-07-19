@@ -1,2 +1,0 @@
-# reverseImageSearchAlgorithm
-//todo
