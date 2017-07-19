@@ -1,0 +1,341 @@
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="math.js" type="text/javascript"></script>
+    <!--<script src="http://d3js.org/d3.v3.min.js"></script>-->
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+          rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="fullPageWraper">
+    <div class="header">
+	<a class="github-link" href="https://github.com/pippy360" title="Source on GitHub">
+	    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 60.5 60.5" width="60" height="60">
+		<polygon class="bg" points="60.5,60.5 0,0 60.5,0 "></polygon>
+		<path class="icon" d="M43.1,5.8c-6.6,0-12,5.4-12,12c0,5.3,3.4,9.8,8.2,11.4c0.6,0.1,0.8-0.3,0.8-0.6c0-0.3,0-1,0-2c-3.3,0.7-4-1.6-4-1.6c-0.5-1.4-1.3-1.8-1.3-1.8c-1.1-0.7,0.1-0.7,0.1-0.7c1.2,0.1,1.8,1.2,1.8,1.2c1.1,1.8,2.8,1.3,3.5,1c0.1-0.8,0.4-1.3,0.8-1.6c-2.7-0.3-5.5-1.3-5.5-5.9c0-1.3,0.5-2.4,1.2-3.2c-0.1-0.3-0.5-1.5,0.1-3.2c0,0,1-0.3,3.3,1.2c1-0.3,2-0.4,3-0.4c1,0,2,0.1,3,0.4c2.3-1.6,3.3-1.2,3.3-1.2c0.7,1.7,0.2,2.9,0.1,3.2c0.8,0.8,1.2,1.9,1.2,3.2c0,4.6-2.8,5.6-5.5,5.9c0.4,0.4,0.8,1.1,0.8,2.2c0,1.6,0,2.9,0,3.3c0,0.3,0.2,0.7,0.8,0.6c4.8-1.6,8.2-6.1,8.2-11.4C55.1,11.2,49.7,5.8,43.1,5.8z"></path>
+	    </svg>
+	</a>
+        <div class="headerInner">
+            <h1>Image Matching Demo</h1>
+            <p>Click and drag on the query image to apply a transformation.</p>
+        </div>
+    </div>
+    <div class="buttonsWrapper">
+        <div class="buttonsInner">
+            <span data-toggle="buttons">
+                <label id="translateButton" class="btn btn-secondary active"
+                       onclick="setCurrnetOperation(enum_TransformationOperation.TRANSLATE)">
+                    <input type="radio" name="options" autocomplete="off" checked>Move</input>
+                </label>
+                <label class="btn btn-secondary"
+                       onclick="setCurrnetOperation(enum_TransformationOperation.NON_UNIFORM_SCALE)">
+                    <input type="radio" name="options" autocomplete="off">Directional Scale</input>
+                </label>
+                <label class="btn btn-secondary"
+                       onclick="setCurrnetOperation(enum_TransformationOperation.UNIFORM_SCALE)">
+                    <input type="radio" name="options" autocomplete="off">Uniform Scale</input>
+                </label>
+                <label class="btn btn-secondary" onclick="setCurrnetOperation(enum_TransformationOperation.ROTATE)">
+                    <input type="radio" name="options" autocomplete="off">Rotate</input>
+                </label>
+                <label class="btn btn-secondary" onclick="setCurrnetOperation(enum_TransformationOperation.CROP)">
+                    <input type="radio" name="options" autocomplete="off">Crop</input>
+                </label>
+            </span>
+            <!--<button class="btn btn-default" onclick="toggleDrawKeypointsMode()" >Toggle DrawKeypoints</button>-->
+            <!--<button class="btn btn-default" style="float:right;" onclick="callSearch()">CompareImages</button>-->
+            <span style="float: right">
+                <span data-toggle="buttons">
+                   <div style="float: left; padding-right: 10px;">
+                        <button type="button" style="margin-bottom: 8px;" class="alert-danger btn btn-secondary"
+                            onclick="reset()">Reset</button>
+                   </div>
+                </span>
+            </span>
+        </div>
+    </div>
+    <div class="mainContentContainerWrapper">
+        <div id="mainContentContainer" class="">
+            <div class="clickAndDragTitle">
+            </div>
+            <div class="demoAreaContainer">
+                <div id="bigCanvasContainerWrapper" class="bigCanvasContainerWrapper">
+                    <div id="bigCanvasContainer" class="bigCanvasContainer">
+                        <div class="canvasWrapperLeft">
+                            <label class="canvasTitle">Query Image</label>
+                            <div class="radio canvasTitleRight" id="interactiveUiToggle">
+                                <label class="checkbox-inline">
+                                    Show UI overlay
+                                    <input type="checkbox" id="inlineCheckbox2" value="option2" checked>
+                                </label>
+                            </div>
+                            <div class="canvasShadow interactiveCanvasWrapper">
+                                <canvas id="queryImageCanvasImageContent" class="canvasBottom" width="280"
+                                        height="280"></canvas>
+                                <canvas id="queryImageCanvasUiOverlay" class="canvasTop" width="280" height="280"></canvas>
+                                <canvas id="queryImageCanvasImageOutline" class="canvasClickThrough" width="280" height="280"></canvas>
+                                <canvas id="queryImageCanvasHighlightedTriangle" class="canvasClickThrough" width="280" height="280"></canvas>
+                            </div>
+                        </div>
+                        <div class="canvasWrapperRight">
+                            <label class="canvasTitle">Images Stored In Database</label>
+                            <div class="radio canvasTitleRight" id="referenceUiToggle">
+                                <label class="checkbox-inline">
+                                    Show UI overlay
+                                    <input type="checkbox" id="inlineCheckbox2" value="option2" checked>
+                                </label>
+                            </div>
+                            <div class="canvasShadow referenceCanvasWrapper">
+                                <canvas id="databaseImageCanvasImageContent" class="canvasBottom" width="560"
+                                        height="280"></canvas>
+                                <canvas id="databaseImageCanvasUiOverlay" class="canvasTop" width="560" height="280"></canvas>
+                                <canvas id="databaseImageCanvasImageOutline" style="visibility: hidden" class="canvasClickThrough" width="560" height="280"></canvas>
+                                <canvas id="databaseImageCanvasHighlightedTriangle" class="canvasClickThrough" width="560" height="280"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="output">
+                    <div class="smallCanvasWrapper">
+                        <div class="fragmentCanvasWrapper">
+                            <canvas class="canvasShadow" id="fragmentCanvas1" height="160" width="160"></canvas>
+                        </div>
+                        <div class="distanceOutput">
+                            <label class="distanceOutputTitle">Perceptual hash distance:</label>
+                            <label id="pHashDistanceOutputWrapper" class="distanceOutputData"> 0 </label>
+                            <button class="prevBtn btn btn-secondary" onclick="highlightPrevTriangle()">prev</button>
+                            <button class="nextBtn btn btn-secondary" onclick="highlightNextTriangle()">next</button>
+                            <div id="matchNoMatchLabel"></div>
+                        </div>
+                        <div class="fragmentCanvasWrapper">
+                            <canvas class="canvasShadow" id="fragmentCanvas2" height="160" width="160"></canvas>
+                        </div>
+                        <div class="trianglesListWrapper">
+                            <ul class="nav nav-tabs" id="myTabs" role="tablist">
+                                <li role="presentation" class="active" ><a href="#listTab1" id="home-tab1" role="tab" data-toggle="tab" aria-controls="listTab1" aria-expanded="true">Image 1 matches</a></li>
+                                <li role="presentation" ><a href="#listTab2" id="home-tab2" role="tab" data-toggle="tab" aria-controls="listTab2" aria-expanded="true">Image 2 matches</a></li>
+                            </ul>
+                            <div class="trianglesListInnerWrapper tab-content" id="trianglesListInnerWrapper">
+                                <div id="listTab1" class="tab-pane show active">
+                                    <table class="triangleList table ">
+                                        <tbody id="triangleListBody1" role="menu">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div id="listTab2" class="tab-pane">
+                                    <table class="triangleList table ">
+                                        <tbody id="triangleListBody2" role="menu">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="moreWrapper">
+        <div class="more">
+            <button class="moreButton"><i class="material-icons">keyboard_arrow_down</i></button>
+        </div>
+    </div>
+    <article class="aboutAreaWrapper">
+        <div class="aboutArea">
+            <div>
+                <h2 style="margin-top: 10px">About</h2>
+                <p>
+                    This demo showcases a reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching
+                    in sublinear time. The algorithm compares an input image to its database of preprocessed images and determines
+                    if the input matches any image in the database. The database need not contain the original image as inputs
+                    can be matched to any 2D affine transformation of the original. This means that images which have been
+                    scaled (uniformly or non-uniformly), skewed, translated, cropped or rotated (or have undergone any combination
+                    of these transformations) can be identified as coming from the same source image (Figure 1).
+                </p>
+                <p>
+                    The algorithm runs in sublinear time with respect to the number of images in the database, regardless of the number of transformations applied. 
+		Note that if image-matching could not be done in sublinear time it would not
+                    function at the scale that the likes of Google or Microsoft require.
+                </p>
+                <div class="affineDemoVideoWrapper articleContent">
+                    <video class="affineDemoVideo" controls loop>
+                        <source src="images/affineDemo.webm" type="video/webm; codecs=vp9,vorbis">
+                        <source src="images/affineDemo.mp4" type="video/mp4">
+                    </video>
+                    <div class="figureText"><b>Figure 1.</b> 2D affine transformation invariant image-matching</div>
+                </div>
+                <p>
+                    If the input is a composite of images or image fragments, the algorithm will return matches for each
+                    image/image fragment (Figure 2).
+                </p>
+                <div class="compositeMatchingImageWrapper articleContent">
+                    <img src="images/compositeMatching.png" class="compositeMatchingImage" style="width: 700px; height: 1230px" />
+                    <div class="figureText"><b>Figure 2.</b> The query image (c), which is a composite of (a) and (b), matches the
+                    two images (d) and (e) stored in the database</div>
+                </div>
+            </div>
+            <div>
+                <h2>How it Works</h2>
+                <div class="stepsWrapper clearfix">
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber">1.</div>
+                        <div class="stepText">
+                            The algorithm finds keypoints in the input using edge detection<a href="#supKeypointFinder"><sup>1</sup></a>.
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber">2.</div>
+                        <div class="stepText">
+                            Each set of three keypoints is converted into a triangle<a href="#supHashLookup"><sup>2</sup></a>.
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber">3.</div>
+                        <div class="stepText">
+                            These triangles are transformed into equilateral triangles.
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber">4.</div>
+                        <div class="stepText">
+                            A perceptual hashing algorithm (in this case PHash) is used to produce a hash for each triangle.
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber">5.</div>
+                        <div class="stepText">
+                            The algorithm compares the hash to those stored in the database and returns all matching
+                            images<a href="#supCompositeLookup"><sup>3</sup></a>.
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <p>
+                        All images in the database have been preprocessed in this manner to produce hashes for comparison.
+                    </p>
+                </div>
+                <div class="articleContent" class="mortyVideoWrapper">
+                    <video controls class="mortyVideo">
+                        <source src="images/morty.webm" type="video/webm; codecs=vp9,vorbis">
+                        <source src="images/morty.mp4" type="video/mp4">
+                    </video>
+                    <div class="figureText"><b>Figure 3.</b> Step-by-step video guide showing how the algorithm operates</div>
+                </div>
+                <div class="stepsWrapper clearfix" style="font-size: 16px; padding-bottom: 0">
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber" style="padding-top: 16px">
+                            <sup id="supKeypointFinder">1</sup>
+                        </div>
+                        <div class="stepText">
+                            Any keypoint-finding algorithm can be used so long as it is 2D
+                            affine transformation-invariant.
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber" style="padding-top: 20px">
+                            <sup id="supHashLookup">2</sup>
+                        </div>
+                        <div class="stepText">
+                            The comparison can be done through a hash lookup (which can be done in constant time)
+                            or by finding a ‘nearest-neighbour’ in the database (which can be done
+                            in amortized log<sub><span style="font-size: 10px">2</span></sub>n time).
+                        </div>
+                    </div>
+                    <div class="stepTextWrapper">
+                        <div class="boldListNumber" style="padding-top: 20px">
+                            <sup id="supCompositeLookup">3</sup>
+                        </div>
+                        <div class="stepText">
+                            The algorithm will return multiple matches if the input is a
+                            composite of images.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2>How it Compares to the Competition</h2>
+                <p>
+                    As you can see in Figure 4 below, the algorithm performs better than industry leaders in matching
+                    images which have undergone 2D affine transformations. Even the best-performing service, Google Image
+                    Search, fails to handle a simple 45 degree rotation.
+                </p>
+                <div class="articleContent">
+                    <img src="images/cats image.jpg" style="width: 100%">
+                    <div class="figureText">
+                        <b>Figure 4.</b> Comparison of the image-matching capabilities of our
+                        algorithm versus market leaders.
+                    </div>
+                </div>
+                <p>
+                    Market leaders show limited ability to find matches of images which have undergone certain transformations.
+                    Our algorithm solves this problem for 2D affine transformations and, if used in
+                    conjunction with other modern techniques, offers a significant improvement in reverse-image searching.
+                </p>
+            </div>
+        </div>
+    </article>
+</div>
+<!-- jQuery first, then Tether, then Bootstrap JS. -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+<script src="main.js"></script>
+
+<script>
+
+$('#referenceUiToggle').change(function(e) {
+    toggleDrawReferenceUIOverlayWrapper(e);
+});
+
+$('#interactiveUiToggle').change(function(e) {
+    toggleDrawInteractiveUIOverlayWrapper(e);
+});
+
+$(".moreButton").click(function() {
+	$('html, body').animate({		
+		scrollTop: $(".moreButton").offset().top
+	}, 500);		
+});
+
+$('#myTabs a').click(function (e) {
+    e.preventDefault();
+    $(this).tab('show');
+    if (g_globalState == null) {
+        //page not loaded yet
+    } else {
+        if ($(this)[0].id == "home-tab1") {
+            g_globalState.highlightedTriangleListTabIndex = 0;
+        } else {
+            g_globalState.highlightedTriangleListTabIndex = 1;
+        }
+    }
+});
+
+</script>
+</body>
+<footer>
+    <div class="footerContents">
+        <span class="styleCopied"><a href="http://playground.tensorflow.org" class="styleCopiedLink">Style copied from here</a></span>
+        <span class="styleCopied"><a href="http://github.com/pippy360" class="styleCopiedLink">My Github</a></span>
+        <span class="styleCopied"><a href="#" class="styleCopiedLink">Source on github</a></span>
+        <div class="contactMe">Contact me: murphyt7@tcd.ie</div>
+    </div>
+</footer>
+<script>
+
+</script>
+</html>
