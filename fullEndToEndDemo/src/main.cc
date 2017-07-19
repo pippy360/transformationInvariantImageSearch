@@ -54,7 +54,7 @@ void addAllHashesToRedis(string imagePath){
 
 	count++;
     }
-    cout << "Added " << count << " fragments to DB" << endl;
+    cout << "Added " << count << " image fragments to DB" << endl;
 }
 
 int findMatchingHashInRedis(string imageName){
