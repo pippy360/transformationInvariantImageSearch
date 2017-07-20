@@ -14,7 +14,7 @@ This demo shows the original image below matching the 8 transformed images below
 
 ![Original Cat Image](https://pippy360.github.io/transformationInvariantImageSearch/images/cat_original.png)
 
-![Transformed Cat Images](https://pippy360.github.io/transformationInvariantImageSearch/images/compositeMatching.png)
+![Transformed Cat Images](https://pippy360.github.io/transformationInvariantImageSearch/images/8cats.png)
 
 #Demo 2
 
