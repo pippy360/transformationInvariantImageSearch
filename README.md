@@ -8,7 +8,7 @@ The /docs directory contains this front end javascript demo https://pippy360.git
 
 The /fullEndToEndDemo directory contains two full end to end demos of the algorithm. 
 
-#Demo 1
+# Demo 1
 
 This demo shows the original image below matching the 8 transformed images below. Each image has some combination of 2D affine transformations applied to it. The demo inserts each of the 8 images individually into the database and then queries the database with the original image.
 
@@ -16,7 +16,7 @@ This demo shows the original image below matching the 8 transformed images below
 
 ![Transformed Cat Images](https://pippy360.github.io/transformationInvariantImageSearch/images/8cats.png)
 
-#Demo 2
+# Demo 2
 
 This demo shows partial image matching. The query image below (c) is a composite of images (a) and (b). The demo inserts images (a) and (b) into the database and then queries with image (c). Image (d) and (e) show the matching fragments, each coloured triangle is a fragment of the image that matched the composite image (c).
 
