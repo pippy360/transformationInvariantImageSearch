@@ -208,14 +208,14 @@
                     <div class="stepTextWrapper">
                         <div class="boldListNumber">4.</div>
                         <div class="stepText">
-                            A perceptual hashing algorithm (in this case PHash) is used to produce a hash for each triangle.
+                            Each equilateral triangle is rotated to each of it's 3 edges and a perceptual hashing algorithm (in this case PHash) is used to produce a hash for each side<a href="#triangleHashing"><sup>3</sup></a>.
                         </div>
                     </div>
                     <div class="stepTextWrapper">
                         <div class="boldListNumber">5.</div>
                         <div class="stepText">
                             The algorithm compares the hash to those stored in the database and returns all matching
-                            images<a href="#supCompositeLookup"><sup>3</sup></a>.
+                            images<a href="#supCompositeLookup"><sup>4</sup></a>.
                         </div>
                     </div>
                 </div>
@@ -251,9 +251,17 @@
                             in amortized log<sub><span style="font-size: 10px">2</span></sub>n time).
                         </div>
                     </div>
+		    <div class="stepTextWrapper">
+                        <div class="boldListNumber" style="padding-top: 20px">
+                            <sup id="triangleHashing">3</sup>
+                        </div>
+                        <div class="stepText">
+                            Rotating the triangle to each of it's 3 sides and hashing each rotation keeps the alogrithm rotation invariant.
+                        </div>
+                    </div>
                     <div class="stepTextWrapper">
                         <div class="boldListNumber" style="padding-top: 20px">
-                            <sup id="supCompositeLookup">3</sup>
+                            <sup id="supCompositeLookup">4</sup>
                         </div>
                         <div class="stepText">
                             The algorithm will return multiple matches if the input is a
