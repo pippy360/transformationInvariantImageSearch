@@ -9,11 +9,11 @@ The /docs directory contains this front end javascript demo: https://pippy360.gi
 
 The /fullEndToEndDemo directory contains two full end to end c++ demos of the algorithm. 
 
-Both end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Hence the demos show the algorithm runs in O(1) time with respect to the number of images in the database. A nearest neighbor algorithm could also be used to find the closest hash within some threshold. That would increase the accuracy but the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
+The two end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Each demo runs in O(1) time with respect to the number of images in the database. A nearest neighbor algorithm could also be used to find the closest hash within some threshold. That would increase the accuracy but the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
 
-The preprocessing the alogrithm does to each image is embarrassingly parallel. Processing each fragment/triangle of the image only requires the 3 points of the triangle and a read-only copy of the image. So if implemented correctly there should be a near linear speedup with respect to the number of cores used.
+Processing each fragment/triangle of the image only requires the 3 points of the triangle and a read-only copy of the image  so the preprocessing for an image is embarrassingly parallel. If implemented correctly there should be a near linear speedup with respect to the number of cores used.
 
-**However these demos were created quickly as a proof of concept and as a result are very slow. They just show the alogrithm works and that it can work in O(1) time.**
+**However these demos were created quickly as a proof of concept and as a result are very slow. The demos show the alogrithm works and that it can work in O(1) time.**
 
 
 
@@ -25,7 +25,7 @@ This setup was tested on a newly deployed vm on Debian GNU/Linux 9 (stretch), YM
 
 Instead of running the commands manually you can run the ./setup.sh script while in the /fullEndToEndDemo directory.
 
-Or you can run the commands manually...
+Or if you want to run the commands manually...
 
 ```
 # From the root of the repo go to ./fullEndToEndDemo
@@ -64,7 +64,7 @@ This demo shows the original image below matching the 8 transformed images below
 
 Here the 8 cats images are inserted first and then the database is queried with the orginal cat image. The original image matches all 8 images despite the transfomations. 
 
-The low number of partial image mathces is because we are doing direct hash look ups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
+The low number of partial image mathces is because we are doing direct hash lookups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
   
 The demo takes 2 minutes to run on a quad core VM but could run orders of magnitude faster with a better implementation.
 
