@@ -21,20 +21,30 @@ The preprocessing the alogrithm does to each image is embarrassingly parallel. P
 
 
 
-To run the two end to end c++ demos first clone the repo and then run the following commands.
-
 This setup was tested on a newly deployed vm on Debian GNU/Linux 9 (stretch), YMMV on different setups.
 
+Instead of running the commands manually you can run the ./setup.sh script while in the /fullEndToEndDemo directory.
+
+Or you can run the commands manually...
+
 ```
+# From the root of the repo go to ./fullEndToEndDemo
 cd ./fullEndToEndDemo
-#grab all the dependencies, this install is pretty huge
+
+# Grab all the dependencies, this install is pretty huge
 sudo apt-get install git cmake g++ redis-server libboost-all-dev libopencv-dev python-opencv python-numpy python-scipy -y
 
-#make it
+#Make it
 cmake .
 make
 
-#then run either ./runDemo1.sh or ./runDemo2.sh to run the demo
+# This step is optional. It removes a pointless annoying error opencv spits out
+# About: https://stackoverflow.com/questions/12689304/ctypes-error-libdc1394-error-failed-to-initialize-libdc1394
+sudo ln /dev/null /dev/raw1394
+
+# Then run either ./runDemo1.sh or ./runDemo2.sh to run the demo
+
+
 ```
 
 
