@@ -7,7 +7,13 @@ An online demo with a description of how the algorithm works is available here:
 
 The /docs directory contains this front end javascript demo: https://pippy360.github.io/transformationInvariantImageSearch
 
-The /fullEndToEndDemo directory contains two full end to end demos of the algorithm. 
+The /fullEndToEndDemo directory contains two full end to end c++ demos of the algorithm. 
+
+The preprocessing the alogrithm does to each image is embarrassingly parallel. Processing each fragment/triangle of the image only requires the 3 points of the triangle and a read-only copy of the image. So if implemented correctly there should be a near linear speedup with respect to the number of cores used.
+
+**However these demos were created quickly as a proof of concept and as a result are very slow. They just show the alogrithm works and that it can work in O(1) time with respect to the number of images in our database.**
+
+
 
 # Setup
 
