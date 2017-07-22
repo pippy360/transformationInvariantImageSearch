@@ -1,17 +1,36 @@
-# 2D affine transformation-invariant partial image-matching in sublinear time 
-A reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching in sublinear time with respect to the number of images in our database.
+# transformation-invariant reverse image search 
 
-Online demo available here: https://pippy360.github.io/transformationInvariantImageSearch
+This repo demos a reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching in sublinear time with respect to the number of images in our database.
 
-This repo is a cleaned up version of the many other repos on my github that this project is spread across.
+An online demo with a description of how the algorithm works is available here: https://pippy360.github.io/transformationInvariantImageSearch
 
 The /docs directory contains this front end javascript demo https://pippy360.github.io/transformationInvariantImageSearch
 
 The /fullEndToEndDemo directory contains two full end to end demos of the algorithm. 
 
+# Setup
+
+
+
+To run the two end to end c++ demos of the algorithm first clone the repo and then run the following commands.
+
+This setup was tested on a newly deployed vm on Debian GNU/Linux 9 (stretch), YMMV on different setups.
+
+```
+cd ./fullEndToEndDemo
+#grab all the dependencies, this install is pretty huge
+sudo apt-get install git cmake g++ redis-server libboost-all-dev libopencv-dev python-opencv python-numpy python-scipy -y
+
+#make it
+cmake .
+make
+
+#then run either ./runDemo1.sh or ./runDemo2.sh to run the demo
+```
 
 
 # Demo 1
+
 
 To run this demo go to the /fullEndToEndDemo directory and run ./runDemo1.sh 
 
@@ -26,6 +45,7 @@ This demo shows the original image below matching the 8 transformed images below
 
 
 # Demo 2
+
 
 To run this demo go to the /fullEndToEndDemo directory and run ./runDemo2.sh 
 
