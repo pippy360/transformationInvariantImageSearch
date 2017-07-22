@@ -1,3 +1,9 @@
+"""This file gets 2D affine transformation-invariant keypoints for a given image.
+It's really just a bunch of hacks thrown together that works well enough for the proof of concept. 
+The whole proof of concept would be drastically better with a well designed 2D affine 
+transformation-invariant keypointing algorithm.
+"""
+
 import numpy as np
 import cv2
 import curvature
