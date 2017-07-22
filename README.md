@@ -66,6 +66,7 @@ Here the 8 cats images are inserted first and then the database is queried with 
 
 The low number of partial image mathces is because we are doing direct hash look ups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
   
+The demo takes 2 minutes to run on a quad core VM but could run orders of magnitude faster with a better implementation.
 
 ```
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo1.sh 
@@ -120,7 +121,7 @@ This demo shows partial image matching. The query image below (c) is a composite
 
 ## Output
 
-Here the two images mona.jpg and van_gogh.jpg are inserted into the database and then the database is queried with monaComposite.jpg. The demo takes 5 minutes 17 seconds to run on a quad core VM but could run order of magnitudes faster with a better implementation.
+Here the two images mona.jpg and van_gogh.jpg are inserted into the database and then the database is queried with monaComposite.jpg. The demo takes 5 minutes 17 seconds to run on a quad core VM but could run orders of magnitude faster with a better implementation.
 
 ```
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo2.sh 
