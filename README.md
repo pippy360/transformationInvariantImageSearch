@@ -2,9 +2,10 @@
 
 This repo demos a reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching in sublinear time with respect to the number of images in our database.
 
-An online demo with a description of how the algorithm works is available here: https://pippy360.github.io/transformationInvariantImageSearch
+An online demo with a description of how the algorithm works is available here: 
+[Demo](https://pippy360.github.io/transformationInvariantImageSearch)
 
-The /docs directory contains this front end javascript demo https://pippy360.github.io/transformationInvariantImageSearch
+The /docs directory contains this front end javascript demo: https://pippy360.github.io/transformationInvariantImageSearch
 
 The /fullEndToEndDemo directory contains two full end to end demos of the algorithm. 
 
