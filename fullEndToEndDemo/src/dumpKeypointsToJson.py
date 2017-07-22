@@ -138,7 +138,6 @@ def main():
 		print("you need to pass in an image path!!!! and also an output path for the json")
 		return -1
 
-	print sys.argv[1] + " : " + sys.argv[2]
 	img = cv2.imread(sys.argv[1])
 	dumpKeypoints(img, sys.argv[2])
 
