@@ -1,4 +1,5 @@
-"""This file takes in a function (represented as a number of points and approximated using a spline) and returns the local maximums of curvature.
+"""This file takes in a function (represented as a number of points and approximated using a spline) 
+and returns the local maximums of curvature.
 """
 
 
