@@ -19,7 +19,7 @@ The preprocessing the alogrithm does to each image is embarrassingly parallel. P
 
 
 
-To run the two end to end c++ demos of the algorithm first clone the repo and then run the following commands.
+To run the two end to end c++ demos first clone the repo and then run the following commands.
 
 This setup was tested on a newly deployed vm on Debian GNU/Linux 9 (stretch), YMMV on different setups.
 
