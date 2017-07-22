@@ -9,7 +9,7 @@ The /docs directory contains this front end javascript demo: https://pippy360.gi
 
 The /fullEndToEndDemo directory contains two full end to end c++ demos of the algorithm. 
 
-Both end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Hence the demos show the algorithm runs in O(1) time with respect to the number of images in the database. A nearest neighbour algorithm could also be used to find the closest hash within some threshold. That would increase the accuracy but the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
+Both end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Hence the demos show the algorithm runs in O(1) time with respect to the number of images in the database. A nearest neighbor algorithm could also be used to find the closest hash within some threshold. That would increase the accuracy but the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
 
 The preprocessing the alogrithm does to each image is embarrassingly parallel. Processing each fragment/triangle of the image only requires the 3 points of the triangle and a read-only copy of the image. So if implemented correctly there should be a near linear speedup with respect to the number of cores used.
 
@@ -56,10 +56,56 @@ To run this demo go to the /fullEndToEndDemo directory and run ./runDemo1.sh
 This demo shows the original image below matching the 8 transformed images below. Each image has some combination of 2D affine transformations applied to it. The demo inserts each of the 8 images individually into the database and then queries the database with the original image.
 
 
-
 ![Original Cat Image](https://pippy360.github.io/transformationInvariantImageSearch/images/cat_original.png)
 
 ![Transformed Cat Images](https://pippy360.github.io/transformationInvariantImageSearch/images/8cats.png)
+
+## Output
+
+Here the 8 cats images are inserted first and then the database is queried with the orginal cat image. The original image matches all 8 images despite the transfomations. 
+
+The low number of partial image mathces is because we are doing direct hash look ups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
+  
+
+```
+user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo1.sh 
+Loading image: inputImages/cat1.png ... done
+Added 46725 image fragments to DB
+Loading image: inputImages/cat2.png ... done
+Added 65769 image fragments to DB
+Loading image: inputImages/cat3.png ... done
+Added 34179 image fragments to DB
+Loading image: inputImages/cat4.png ... done
+Added 44388 image fragments to DB
+Loading image: inputImages/cat5.png ... done
+Added 47799 image fragments to DB
+Loading image: inputImages/cat6.png ... done
+Added 44172 image fragments to DB
+Loading image: inputImages/cat7.png ... done
+Added 67131 image fragments to DB
+Loading image: inputImages/cat8.png ... done
+Added 18078 image fragments to DB
+Loading image: inputImages/cat_original.png ... done
+Added 30372 image fragments to DB
+Loading image: inputImages/cat_original.png ... done
+Matches:
+inputImages/cat1.png: 12
+inputImages/cat2.png: 16
+inputImages/cat3.png: 15
+inputImages/cat4.png: 1
+inputImages/cat5.png: 2
+inputImages/cat6.png: 4
+inputImages/cat7.png: 43
+inputImages/cat8.png: 18
+inputImages/cat_original.png: 30352
+Number of matches: 30463
+
+real    1m57.285s
+user    2m19.864s
+sys     0m8.296s
+```
+
+
 
 
 
@@ -70,6 +116,25 @@ To run this demo go to the /fullEndToEndDemo directory and run ./runDemo2.sh
 
 This demo shows partial image matching. The query image below (c) is a composite of images (a) and (b). The demo inserts images (a) and (b) into the database and then queries with image (c). Image (d) and (e) show the matching fragments, each coloured triangle is a fragment of the image that matched the composite image (c).
 
-
-
 ![Partial Image Match Example](https://pippy360.github.io/transformationInvariantImageSearch/images/compositeMatching.png)
+
+## Output
+
+Here the two images mona.jpg and van_gogh.jpg are inserted into the database and then the database is queried with monaComposite.jpg. The demo takes 5 minutes 17 seconds to run on a quad core VM but could run order of magnitudes faster with a better implementation.
+
+```
+user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo2.sh 
+Loading image: ./inputImages/mona.jpg ... done
+Added 26991 image fragments to DB
+Loading image: ./inputImages/van_gogh.jpg ... done
+Added 1129896 image fragments to DB
+Loading image: ./inputImages/monaComposite.jpg ... done
+Matches:
+./inputImages/mona.jpg: 5
+./inputImages/van_gogh.jpg: 1477
+Number of matches: 1482
+
+real    5m17.239s
+user    7m30.604s
+sys     0m21.724s
+```
