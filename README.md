@@ -9,7 +9,7 @@ The /docs directory contains this front end javascript demo: https://pippy360.gi
 
 The /fullEndToEndDemo directory contains two full end to end c++ demos of the algorithm. 
 
-The two end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Each demo runs in O(1) time with respect to the number of images in the database. A nearest neighbor algorithm could also be used to find the closest hash within some threshold. That would increase the accuracy but the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
+The two end to end c++ demos use Redis as a database and do a direct hash lookup for the constant number of hashes produced for each query image. Each demo runs in O(1) time with respect to the number of images in the database. A nearest neighbor algorithm could also be used instead to find the closest hash within some threshold which would increase the accuracy but then the algorithm would run in amortized O(log n) time (depending on which NN algorithm was used). 
 
 Processing each fragment/triangle of the image only requires the 3 points of the triangle and a read-only copy of the image  so the preprocessing for an image is embarrassingly parallel. If implemented correctly there should be a near linear speedup with respect to the number of cores used.
 
