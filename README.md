@@ -23,7 +23,7 @@ Processing each fragment/triangle of the image only requires the 3 points of the
 
 This setup was tested on a newly deployed vm on Debian GNU/Linux 9 (stretch), YMMV on different setups.
 
-Instead of running the commands manually you can run the ./setup.sh script while in the /fullEndToEndDemo directory.
+Instead of running these commands manually you can run the ./setup.sh script while in the /fullEndToEndDemo directory.
 
 Or if you want to run the commands manually...
 
