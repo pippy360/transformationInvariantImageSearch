@@ -32,6 +32,7 @@ Or if you want to run the commands manually...
 cd ./fullEndToEndDemo
 
 # Grab all the dependencies, this install is pretty huge
+sudo apt-get update
 sudo apt-get install git cmake g++ redis-server libboost-all-dev libopencv-dev python-opencv python-numpy python-scipy -y
 
 #Make it
