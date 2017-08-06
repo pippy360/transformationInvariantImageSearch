@@ -65,7 +65,7 @@ This demo shows the original image below matching the 8 transformed images below
 
 Here the 8 cats images are inserted first and then the database is queried with the orginal cat image. The original image matches all 8 images despite the transfomations. 
 
-The low number of partial image mathces is because we are doing direct hash lookups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
+The low number of partial image matches is because we are doing direct hash lookups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
   
 The demo takes 2 minutes to run on a quad core VM but could run orders of magnitude faster with a better implementation.
 
