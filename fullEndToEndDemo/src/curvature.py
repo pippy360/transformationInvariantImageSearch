@@ -3,7 +3,6 @@ and returns the local maximums of curvature.
 """
 
 
-import math
 import numpy as np
 from numpy import sin,pi,linspace
 from scipy.interpolate import UnivariateSpline, interp1d
@@ -16,28 +15,13 @@ g_SmoothingForParameterization_s = None
 g_SmoothingForDeltaCurvature = None
 
 
-def getPointsAndFirstDerAtT(t, fx, fy):
-	return fx([t])[0], fx.derivative(1)([t])[0], fy([t])[0], fy.derivative(1)([t])[0]
-	
-def lengthRateOfChangeFunc(t, fx, fy):
-	x, dxdt, y, dydt = getPointsAndFirstDerAtT(t, fx, fy)
-	val = math.sqrt(dxdt**2 + dydt**2)
-	return val
-
 def arcLengthAllTheWayToT(tList, fx_t, fy_t, noOfPoints=100, subDivide=1):
-	all_x_vals = tList
-	all_y_vals = []
-	for i in range((len(all_x_vals)*subDivide)):
-			x1 = float(i)/float(subDivide)
-			all_y_vals.append(lengthRateOfChangeFunc(x1, fx_t, fy_t))
-	
-	#extract only the y values we care about
-	next_all_y_vals = []
-	for i in range(len(all_y_vals)/subDivide):
-			next_all_y_vals.append(all_y_vals[i*subDivide])
+	t = np.arange(len(tList)) * subDivide
+	dfx = fx_t.derivative(1)
+	dfy = fy_t.derivative(1)
+	y_vals = np.sqrt(dfx(t) ** 2 + dfy(t) ** 2)
 
-	vals = cumtrapz(next_all_y_vals, all_x_vals, initial=0)
-	return vals
+	return cumtrapz(y_vals, tList, initial=0)
 
 def convertTListToArcLengthList(tList, fx_t, fy_t):
 	return arcLengthAllTheWayToT(tList, fx_t, fy_t, noOfPoints=len(tList))
