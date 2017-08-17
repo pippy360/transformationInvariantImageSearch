@@ -67,7 +67,9 @@ Here the 8 cats images are inserted first and then the database is queried with 
 
 The low number of partial image matches is because we are doing direct hash lookups and so even a small bit of change (for example from antialising) can cause the perceptual hash to be ever so slightly off. Finding a closest hash using nearest neighbor would solve this issue.
   
-The demo takes 2 minutes to run on a quad core VM but could run orders of magnitude faster with a better implementation.
+The demo takes <s>2 minutes</s> (1 minute 38 seconds*) to run on a quad core VM but could run orders of magnitude faster with a better implementation.
+
+*Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
 ```
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo1.sh 
@@ -102,9 +104,9 @@ inputImages/cat8.png: 18
 inputImages/cat_original.png: 30352
 Number of matches: 30463
 
-real    1m57.285s
-user    2m19.864s
-sys     0m8.296s
+real    1m38.352s
+user    2m6.140s
+sys     0m6.592s
 ```
 
 
@@ -122,7 +124,9 @@ This demo shows partial image matching. The query image below (c) is a composite
 
 ## Output
 
-Here the two images mona.jpg and van_gogh.jpg are inserted into the database and then the database is queried with monaComposite.jpg. The demo takes 5 minutes 17 seconds to run on a quad core VM but could run orders of magnitude faster with a better implementation.
+Here the two images mona.jpg and van_gogh.jpg are inserted into the database and then the database is queried with monaComposite.jpg. The demo takes <s>5 minutes 17 seconds</s> (4 minutes 36 seconds*) to run on a quad core VM but could run orders of magnitude faster with a better implementation.
+
+*Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
 ```
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo2.sh 
@@ -133,10 +137,10 @@ Added 1129896 image fragments to DB
 Loading image: ./inputImages/monaComposite.jpg ... done
 Matches:
 ./inputImages/mona.jpg: 5
-./inputImages/van_gogh.jpg: 1477
-Number of matches: 1482
+./inputImages/van_gogh.jpg: 1478
+Number of matches: 1483
 
-real    5m17.239s
-user    7m30.604s
-sys     0m21.724s
+real    4m36.635s
+user    6m50.988s
+sys     0m18.224s
 ```
