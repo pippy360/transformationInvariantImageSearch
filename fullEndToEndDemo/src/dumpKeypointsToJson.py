@@ -4,6 +4,8 @@ The whole proof of concept would be drastically better with a well designed 2D a
 transformation-invariant keypointing algorithm.
 """
 
+from __future__ import division
+
 import numpy as np
 import cv2
 import curvature
@@ -83,39 +85,25 @@ g_pixelVals = [16, 124, 115, 68, 98, 176, 225,
 
 
 def recolour(img, gaussW=41):
-	newg_pixelVals = g_pixelVals
+	pixel_vals = np.array(g_pixelVals, dtype=img.dtype)
 	div = 40
-	for i in range(len(g_pixelVals)/div):
-		for j in range(div):
-			newg_pixelVals[i*div + j] = newg_pixelVals[i*div]
+	size = div * (len(pixel_vals) // div)
 
-		finalCount = (i*div) + div
+	for i in range(0, size, div):
+		pixel_vals[i:i + div] = pixel_vals[i]
 
+	pixel_vals[size:] = pixel_vals[size]
 
-	for i in range( len(g_pixelVals) - finalCount ):
-		newg_pixelVals[ len(g_pixelVals) -1 - i ] = newg_pixelVals[ finalCount ]
+	img = cv2.GaussianBlur(img, (gaussW, gaussW), 0)
+	gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	vals = pixel_vals[gray]
 
+	# v = vals[i, j]
+	# img[i, j, 2 - v % 3] = v
+	m = np.fliplr(np.identity(3, dtype=img.dtype))
+	img = m[vals % 3] * vals[:, :, np.newaxis]
 
-	img2 = img
-	img2 = cv2.GaussianBlur(img2,(gaussW,gaussW),0)
-	img  = cv2.cvtColor(img2,cv2.COLOR_BGR2GRAY)
-
-	height, width= img.shape
-	for i in range(0, height):
-		for j in range(0, width):
-			val = img[i,j]
-			val = newg_pixelVals[val]
-
-			if val%3 == 0:
-				threeVal = (0,0,val)
-			elif val%3 == 1:
-				threeVal = (0,val,0)
-			else:
-				threeVal = (val,0,0)
-
-			img2[i,j] = threeVal
-
-	return img2
+	return img
 
 
 def dumpKeypoints(img, filename):
@@ -147,4 +135,5 @@ def main():
 	img = cv2.imread(sys.argv[1])
 	dumpKeypoints(img, sys.argv[2])
 
-main()
+if __name__ == '__main__':
+	main()
