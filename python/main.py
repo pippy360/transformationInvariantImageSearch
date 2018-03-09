@@ -10,7 +10,6 @@ from os import cpu_count
 import cv2
 import redis
 import numpy as np
-from toolz.itertoolz import partition_all
 
 from keypoints import compute_keypoints
 from phash import triangles_from_keypoints, hash_triangles
@@ -24,33 +23,39 @@ def phash_triangles(img, triangles, batch_size=None):
 
     array = np.asarray(triangles, dtype='d')
     tasks = [(img, array[i:i + batch_size]) for i in range(0, n, batch_size)]
+    results = []
 
     with multiprocessing.Pool(processes=cpu_count()) as p:
         for result in p.starmap(hash_triangles, tasks):
-            yield from result
+            results += result
+
+    return results
 
 
-def insert(r, filename, hashes, batch_size=1000):
+def pipeline(r, data, chunk_size):
+    npartitions = len(data) // chunk_size
+    pipe = r.pipeline()
+
+    for chunk in np.array_split(data, npartitions or 1):
+        yield pipe, chunk
+
+
+def insert(chunks, filename):
     n = 0
 
-    for batch in partition_all(batch_size, hashes):
-        pipe = r.pipeline()
+    for pipe, keys in chunks:
+        for key in keys:
+            pipe.sadd(key, filename)
 
-        for key in batch:
-            r.sadd(key, filename)
-
-        pipe.execute()
-        n += len(batch)
+        n += sum(pipe.execute())
 
     print(f'added {n} fragments for {filename}')
 
 
-def lookup(r, filename, hashes, batch_size=1000):
+def lookup(chunks, filename):
     count = Counter()
 
-    for keys in partition_all(batch_size, hashes):
-        pipe = r.pipeline()
-
+    for pipe, keys in chunks:
         for key in keys:
             pipe.smembers(key)
 
@@ -80,8 +85,9 @@ def main():
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(keypoints, lower=50, upper=400)
         hashes = phash_triangles(img, triangles)
+        chunks = pipeline(r, hashes, chunk_size=1e5)
 
-        command(r, filename, hashes)
+        command(chunks, filename)
 
 
 if __name__ == '__main__':

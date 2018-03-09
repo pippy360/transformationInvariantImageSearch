@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-
 from sklearn.neighbors import BallTree
 
 
@@ -26,26 +25,33 @@ def hash_to_hex(a):
 
 
 def hash_triangles(img, triangles):
+    n = len(triangles)
+    triangles = np.asarray(triangles)
+
+    # basically the return value
+    hash_size = 8
+    hash_img_size = 32, 32
+    low_freq_dct = np.empty((3, n, hash_size, hash_size))
+
+    # size of the target image for affine transform
     size = width, height = int(60 * 0.86), 60
 
-    triangles = np.asarray(triangles)
-    n = len(triangles)
-
-    empty_n_identity33 = np.empty((n, 3, 3), dtype='d')
-    empty_n_identity33[:, :] = np.identity(3, dtype='d')
-
-    transpose_m = empty_n_identity33
-    input_points = empty_n_identity33.copy()
+    # helper matrices
+    empty_n_identity33 = np.empty((n, 3, 3))
+    empty_n_identity33[:, :] = np.identity(3)
 
     target_points = empty_n_identity33.copy()
     target_points[:, :2, 0] = width / 2, height
     target_points[:, :2, 1] = width, 0
 
-    permutations = [np.roll((0, 1, 2), i) for i in range(3)]
-    hashes = np.empty((3, n, 8, 8), dtype=np.bool)
+    input_points = empty_n_identity33.copy()
+    transpose_m = empty_n_identity33
 
-    for i in range(3):
-        p = triangles[:, permutations[i], :]
+    # rotate triangles 3 times, one for each edge of the triangle
+    rotations = (0, 1, 2), (1, 2, 0), (2, 0, 1)
+
+    for i, rotation in enumerate(rotations):
+        p = triangles[:, rotation, :]
 
         p0 = p[:, 0]
         p1 = p[:, 1] - p0
@@ -66,14 +72,24 @@ def hash_triangles(img, triangles):
 
         for k in range(n):
             image = cv2.warpAffine(img, transform[k], size)
-            hashes[i, k] = phash(image)
 
-    hashes = hashes.reshape(3 * n, 8, 8)
+            # calculate dct for perceptual hash
+            image = cv2.resize(image, hash_img_size)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            dct = cv2.dct(image.astype(float))
+            low_freq_dct[i, k] = dct[:hash_size, :hash_size]
+
+    # calculate perceptual hash for every triangle
+    low_freq_dct = low_freq_dct.reshape(3 * n, hash_size, hash_size)
+    low_freq_dct[:, 0, 0] = 0
+    mean = np.mean(low_freq_dct, axis=(1, 2))
+    hashes = low_freq_dct > mean[:, None, None]
+
     return hash_to_hex(hashes)
 
 
 def triangles_from_keypoints(keypoints, lower=50, upper=400):
-    keypoints = np.array(keypoints, dtype='d')
+    keypoints = np.asarray(keypoints, dtype=float)
 
     tree = BallTree(keypoints, leaf_size=10)
     i_lower = tree.query_radius(keypoints, r=lower)
