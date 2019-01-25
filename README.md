@@ -48,6 +48,15 @@ sudo ln /dev/null /dev/raw1394
 
 ```
 
+# Python setup
+
+To use python package, do the following:
+
+```
+pip3 install .
+```
+
+You also need install redis.
 
 # Demo 1
 
@@ -109,9 +118,77 @@ user    2m6.140s
 sys     0m6.592s
 ```
 
+python example
 
+```console
+$ time transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat*  && \
+  time transformation-invariant-image-search lookup fullEndToEndDemo/inputImages/cat_original.png
 
-
+loading fullEndToEndDemo/inputImages/cat1.png
+100%|██| 3/3 [00:07<00:00,  2.66s/it]
+100%|██| 3/3 [00:08<00:00,  2.70s/it]
+100%|█| 3/3 [00:00<00:00, 270.58it/s]
+100%|| 1/1 [00:00<00:00, 2457.12it/s]
+added 58956 fragments for fullEndToEndDemo/inputImages/cat1.png
+loading fullEndToEndDemo/inputImages/cat2.png
+100%|██| 3/3 [00:07<00:00,  2.64s/it]
+100%|██| 3/3 [00:08<00:00,  2.76s/it]
+100%|█| 3/3 [00:00<00:00, 149.91it/s]
+100%|█| 1/1 [00:00<00:00, 902.00it/s]
+added 58486 fragments for fullEndToEndDemo/inputImages/cat2.png
+loading fullEndToEndDemo/inputImages/cat3.png
+100%|█████████| 3/3 [00:04<00:00,  1.51s/it]
+100%|█████████| 3/3 [00:04<00:00,  1.56s/it]
+100%|█| 5025/5025 [00:01<00:00, 3570.22it/s]
+added 30141 fragments for fullEndToEndDemo/inputImages/cat3.png
+loading fullEndToEndDemo/inputImages/cat4.png
+100%|███| 3/3 [00:07<00:00,  2.58s/it]
+100%|███| 3/3 [00:07<00:00,  2.62s/it]
+100%|██| 3/3 [00:00<00:00, 434.36it/s]
+100%|█| 1/1 [00:00<00:00, 1709.87it/s]
+added 53013 fragments for fullEndToEndDemo/inputImages/cat4.png
+loading fullEndToEndDemo/inputImages/cat5.png
+100%|█████████| 3/3 [00:08<00:00,  2.90s/it]
+100%|█████████| 3/3 [00:09<00:00,  3.07s/it]
+100%|█| 9420/9420 [00:02<00:00, 3238.60it/s]
+added 56493 fragments for fullEndToEndDemo/inputImages/cat5.png
+loading fullEndToEndDemo/inputImages/cat6.png
+100%|█████████| 3/3 [00:07<00:00,  2.41s/it]
+100%|█████████| 3/3 [00:07<00:00,  2.50s/it]
+100%|█| 7347/7347 [00:02<00:00, 2953.52it/s]
+added 44030 fragments for fullEndToEndDemo/inputImages/cat6.png
+loading fullEndToEndDemo/inputImages/cat7.png
+100%|███████████| 3/3 [00:11<00:00,  3.82s/it]
+100%|███████████| 3/3 [00:11<00:00,  3.94s/it]
+100%|█| 10544/10544 [00:04<00:00, 2393.00it/s]
+added 63089 fragments for fullEndToEndDemo/inputImages/cat7.png
+loading fullEndToEndDemo/inputImages/cat8.png
+100%|█████████| 3/3 [00:03<00:00,  1.06s/it]
+100%|█████████| 3/3 [00:03<00:00,  1.07s/it]
+100%|█| 3160/3160 [00:01<00:00, 3138.56it/s]
+added 18899 fragments for fullEndToEndDemo/inputImages/cat8.png
+loading fullEndToEndDemo/inputImages/cat_original.png
+100%|█████████| 3/3 [00:05<00:00,  1.93s/it]
+100%|█████████| 3/3 [00:05<00:00,  1.94s/it]
+100%|█| 5795/5795 [00:01<00:00, 3211.96it/s]
+added 34764 fragments for fullEndToEndDemo/inputImages/cat_original.png
+transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat  141,98s user 10,14s system 159% cpu 1:35,54 total
+loading fullEndToEndDemo/inputImages/cat_original.png
+100%|█████████| 3/3 [00:05<00:00,  1.83s/it]
+100%|█████████| 3/3 [00:05<00:00,  1.94s/it]
+100%|█| 5795/5795 [00:01<00:00, 3221.91it/s]
+matches for fullEndToEndDemo/inputImages/cat_original.png:
+34770      fullEndToEndDemo/inputImages/cat_original.png
+237        fullEndToEndDemo/inputImages/cat7.png
+36         fullEndToEndDemo/inputImages/cat2.png
+19         fullEndToEndDemo/inputImages/cat4.png
+14         fullEndToEndDemo/inputImages/cat8.png
+7          fullEndToEndDemo/inputImages/cat1.png
+4          fullEndToEndDemo/inputImages/cat3.png
+2          fullEndToEndDemo/inputImages/cat5.png
+1          fullEndToEndDemo/inputImages/cat6.png
+transformation-invariant-image-search lookup   12,71s user 1,62s system 151% cpu 9,472 total
+```
 
 # Demo 2
 
@@ -143,4 +220,32 @@ Number of matches: 1483
 real    4m36.635s
 user    6m50.988s
 sys     0m18.224s
+```
+
+python example
+
+```console
+$ time transformation-invariant-image-search insert ./fullEndToEndDemo/inputImages/mona.jpg ./fullEndToEndDemo/inputImages/van_gogh.jpg && \
+  time transformation-invariant-image-search lookup ./fullEndToEndDemo/inputImages/monaComposite.jpg
+
+loading ./fullEndToEndDemo/inputImages/mona.jpg
+100%|███| 3/3 [00:03<00:00,  1.24s/it]
+100%|███| 3/3 [00:03<00:00,  1.20s/it]
+100%|██| 3/3 [00:00<00:00, 302.48it/s]
+100%|█| 1/1 [00:00<00:00, 2471.60it/s]
+added 24145 fragments for ./fullEndToEndDemo/inputImages/mona.jpg
+loading ./fullEndToEndDemo/inputImages/van_gogh.jpg
+100%|█████████████| 3/3 [02:50<00:00, 56.01s/it]
+100%|█████████████| 3/3 [02:50<00:00, 56.14s/it]
+100%|█| 178267/178267 [00:56<00:00, 3170.20it/s]
+added 1058329 fragments for ./fullEndToEndDemo/inputImages/van_gogh.jpg
+transformation-invariant-image-search insert    384,51s user 12,84s system 168% cpu 3:56,42 total
+loading ./fullEndToEndDemo/inputImages/monaComposite.jpg
+100%|███████████| 3/3 [01:01<00:00, 20.88s/it]
+100%|███████████| 3/3 [01:01<00:00, 20.77s/it]
+100%|█| 61563/61563 [00:19<00:00, 3129.92it/s]
+matches for ./fullEndToEndDemo/inputImages/monaComposite.jpg:
+1332       ./fullEndToEndDemo/inputImages/van_gogh.jpg
+11         ./fullEndToEndDemo/inputImages/mona.jpg
+transformation-invariant-image-search lookup   133,29s user 5,07s system 164% cpu 1:24,30 total
 ```

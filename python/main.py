@@ -11,8 +11,8 @@ import cv2
 import redis
 import numpy as np
 
-from keypoints import compute_keypoints
-from phash import triangles_from_keypoints, hash_triangles
+from .keypoints import compute_keypoints
+from .phash import triangles_from_keypoints, hash_triangles
 
 
 def phash_triangles(img, triangles, batch_size=None):

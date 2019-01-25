@@ -10,7 +10,7 @@ import json
 import cv2
 import numpy as np
 
-import curvature
+from . import curvature
 
 
 PIXEL_VALS = [
