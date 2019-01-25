@@ -68,10 +68,12 @@ def compute_keypoints(img):
 
 
 def find_contours(*args, **kwargs):
-    # opencv 3: image, contours, hierarchy
     # opencv 2: contours, hierarchy
+    # opencv 3: image, contours, hierarchy
+    # opencv 4: contours, hierarchy
+    # https://docs.opencv.org/4.0.0/d3/dc0/group__imgproc__shape.html
     r = cv2.findContours(*args, **kwargs)
-    return r[cv2.__version__ >= '3']
+    return r['4' > cv2.__version__ >= '3']
 
 
 def compute_keypoints_internal(single_channel_image):
