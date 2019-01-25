@@ -1,6 +1,7 @@
+from sklearn.neighbors import BallTree
 import cv2
 import numpy as np
-from sklearn.neighbors import BallTree
+import tqdm
 
 
 HEX_STRINGS = np.array([f'{x:02x}' for x in range(256)])
@@ -50,7 +51,7 @@ def hash_triangles(img, triangles):
     # rotate triangles 3 times, one for each edge of the triangle
     rotations = (0, 1, 2), (1, 2, 0), (2, 0, 1)
 
-    for i, rotation in enumerate(rotations):
+    for i, rotation in enumerate(tqdm.tqdm(rotations)):
         p = triangles[:, rotation, :]
 
         p0 = p[:, 0]
@@ -70,7 +71,7 @@ def hash_triangles(img, triangles):
         transform = target_points @ input_points_inverse @ transpose_m
         transform = transform[:, :2, :]
 
-        for k in range(n):
+        for k in tqdm.tqdm(range(n)):
             image = cv2.warpAffine(img, transform[k], size)
 
             # calculate dct for perceptual hash
