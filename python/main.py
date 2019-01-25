@@ -77,6 +77,11 @@ def main():
     command = insert if command == 'insert' else lookup
 
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
+    try:
+        r.ping
+    except redis.ConnectionError:
+        print('You need to install redis.')
+        return
 
     for filename in filenames:
         print('loading', filename)
@@ -87,6 +92,7 @@ def main():
         hashes = phash_triangles(img, triangles)
         chunks = pipeline(r, hashes, chunk_size=1e5)
 
+        print()
         command(chunks, filename)
 
 
