@@ -6,16 +6,20 @@ TODO
 - copy or link `python` folder to `transformation_invariant_image_search`
 """
 
+def readme():
+    with open('README.md') as f:
+        return f.read()
+
 setup(
     name='transformation-invariant-image-search',
     version='0.0.1',
     description='a reverse image search algorithm which performs 2D affine '
     'transformation-invariant partial image-matching in sublinear time with '
     'respect to the number of images in our database.',
-    #  long_description=,  # TODO
+    long_description=readme(),
     long_description_content_type="text/markdown",
-    #  author='Tom Murphy',  # TODO, author, must be with author_email
-    #  author_email='',  # TODO
+    author='Tom Murphy',
+    author_email='murphyt7@tcd.ie',
     maintainer='Rachmadani Haryono',
     maintainer_email='foreturiga@gmail.com',
     license='MIT',
