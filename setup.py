@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-"""
-TODO
-- copy or link `python` folder to `transformation_invariant_image_search`
-"""
 
 def readme():
     with open('README.md') as f:
@@ -29,6 +25,9 @@ setup(
     zip_safe=False,
     python_requires='>=3.6',
     install_requires=[
+        'Flask-Admin==1.5.3',
+        'Flask-SQLAlchemy>=2.3.2',
+        'Flask>=1.0.2',
         'hiredis',
         'numpy',
         'redis',
@@ -36,9 +35,15 @@ setup(
         'scipy',
         'tqdm>=4.29.1',
     ],
+    extras_require={
+        'dev': [
+            'docutils==0.14',
+            'pytest==4.2.0',
+        ],
+    },
     entry_points={
         'console_scripts': [
-            'transformation-invariant-image-search = transformation_invariant_image_search.main:main']
+            'transformation-invariant-image-search = transformation_invariant_image_search.main:cli']
     },
     classifiers=[
         'Development Status :: 3 - Alpha',
