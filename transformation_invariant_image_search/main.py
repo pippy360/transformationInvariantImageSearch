@@ -2,17 +2,27 @@
 Usage: main.py lookup <image>...
        main.py insert <image>...
 """
-import sys
-import multiprocessing
 from collections import Counter
 from os import cpu_count
+import multiprocessing
+import sys
+import os
 
+from flask import Flask
+from flask.cli import FlaskGroup
+from flask_admin import Admin, AdminIndexView
+import click
 import cv2
-import redis
 import numpy as np
+import redis
 
 from .keypoints import compute_keypoints
 from .phash import triangles_from_keypoints, hash_triangles
+from .models import DB
+
+
+__version__ = '0.0.1'
+DEFAULT_DB_URI = None
 
 
 def phash_triangles(img, triangles, batch_size=None):
@@ -68,12 +78,77 @@ def lookup(chunks, filename):
         print(f'{num:<10d} {key.decode("utf-8")}')
 
 
-def main():
-    if len(sys.argv) < 3:
-        print(__doc__)
-        exit(1)
+def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
+    """create app."""
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri # NOQA
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = os.getenv('TIIS_SECRET_KEY') or os.urandom(24)
+    app.config['WTF_CSRF_ENABLED'] = False
+    # app and db
+    #  DB.init_app(app)
+    #  app.app_context().push()
+    #  db.create_all()
 
-    command, *filenames = sys.argv[1:]
+    @app.shell_context_processor
+    def shell_context():
+        return {'app': app, 'db': DB, 'models': models, 'session': DB.session}
+
+    #  Migrate(app, DB)
+    # flask-admin
+    app_admin = Admin(
+        app, name='Transformation Image Search', template_mode='bootstrap3',
+        index_view=AdminIndexView(
+            #  name='Home',
+            #  template='admin/myhome.html',
+            url='/'
+        )
+    )
+    #  index_view=views.HomeView(name='Home', template='transformation_invariant_image_search/index.html', url='/'))  # NOQA
+    return app
+
+
+def get_custom_version(ctx, param, value):
+    #  if not value or ctx.resilient_parsing:
+        #  return
+    message = '{app_name} {app_version}\nFlask {version}\nPython {python_version}'
+    click.echo(message.format(**{
+        'app_name': 'Transformation Invariant Image Search',
+        'app_version': __version__,
+        'version': flask_version,
+        'python_version': sys.version,
+    }), color=ctx.color)
+    ctx.exit()
+
+
+class CustomFlaskGroup(FlaskGroup):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.params[0].help = 'Show the program version'
+        self.params[0].callback = get_custom_version
+
+
+@click.group(cls=CustomFlaskGroup, create_app=create_app)
+def cli():
+    """CLI interface for Transformation Invariant Image Search."""
+    pass
+
+
+@cli.command()
+@click.argument('image', nargs=-1)
+def insert(image):
+    """Insert image's triangle phashes to database."""
+    main('insert', image)
+
+
+@cli.command()
+@click.argument('image', nargs=-1)
+def lookup(image):
+    """Lookup image's triangle phashes in database."""
+    main('lookup', image)
+
+
+def main(command, filenames):
     command = insert if command == 'insert' else lookup
 
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
@@ -97,4 +172,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    cli()
