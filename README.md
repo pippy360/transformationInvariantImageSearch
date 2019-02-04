@@ -50,6 +50,8 @@ sudo ln /dev/null /dev/raw1394
 
 # Python setup
 
+All credit for the python code goes to [rachmadaniHaryono](https://github.com/rachmadaniHaryono) and [meowcoder](https://github.com/meowcoder).
+
 This setup was tested on a newly deployed vm on Ubuntu 18.04 LTS, YMMV on different setups.
 
 To use python package, do the following:
