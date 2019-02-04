@@ -50,9 +50,19 @@ sudo ln /dev/null /dev/raw1394
 
 # Python setup
 
+This setup was tested on a newly deployed vm on Ubuntu 18.04 LTS, YMMV on different setups.
+
 To use python package, do the following:
 
 ```
+sudo apt-get update
+sudo apt-get install python3-pip python3-opencv redis-server -y
+
+# On some systems this path is missing
+# read more here: https://github.com/pypa/pip/issues/3813
+PATH="$PATH:~/.local/bin"
+
+#cd to project directory
 pip3 install .
 ```
 
