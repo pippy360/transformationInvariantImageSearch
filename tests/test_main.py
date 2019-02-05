@@ -8,7 +8,6 @@ import pytest
 from transformation_invariant_image_search import main
 
 
-
 @pytest.fixture
 def client():
     app = main.create_app()
@@ -33,15 +32,13 @@ def test_empty_db(client):
     assert b'Home - Transformation Image Search' in rv.data
 
 
-def test_help():
+@pytest.mark.parametrize(
+    'args,word',
+    [('--help', 'Usage:'), ('--version', None)]
+)
+def test_cli(args, word):
     runner = CliRunner()
-    result = runner.invoke(main.cli, ['--help'])
+    result = runner.invoke(main.cli, [args])
     assert result.exit_code == 0
-    assert 'Usage:' in result.output
-
-
-def test_version():
-    runner = CliRunner()
-    result = runner.invoke(main.cli, ['--version'])
-    assert result.exit_code == 0
-    #  assert '' in result.output
+    if word is not None:
+        assert word in result.output
