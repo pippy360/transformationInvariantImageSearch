@@ -64,11 +64,11 @@ sudo apt-get install python3-pip python3-opencv redis-server -y
 # read more here: https://github.com/pypa/pip/issues/3813
 PATH="$PATH:~/.local/bin"
 
-#cd to project directory
+# cd to project directory
 pip3 install .
 ```
 
-You also need install redis.
+if you got permission error, install it under virtual env or use `--user` flag.
 
 # Demo 1
 
