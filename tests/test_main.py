@@ -38,7 +38,7 @@ def test_checksum_get(client):
     """test checksum with a blank database."""
     url = '/api/checksum'
     rv = client.get(url)
-    assert rv.get_json() == {}
+    assert rv.get_json() == []
 
 
 def test_checksum_post(client):
