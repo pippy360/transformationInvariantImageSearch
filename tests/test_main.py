@@ -72,6 +72,17 @@ def test_image_post(client):
     assert rv.get_json() == [exp_dict]
 
 
+def test_checksum_duplicate(client):
+    filename1 = 'fullEndToEndDemo/inputImages/cat_original.png'
+    filename2 = 'fullEndToEndDemo/inputImages/cat1.png'
+    upload_url = '/api/image'
+    url = '/api/checksum/{}/duplicate'
+    client.post(upload_url, data={'file': open(filename1, 'rb')})
+    client.post(upload_url, data={'file': open(filename2, 'rb')})
+    rv = client.get(url.format(2))
+    assert rv.get_json() == []
+
+
 @pytest.mark.parametrize(
     'args,word',
     [

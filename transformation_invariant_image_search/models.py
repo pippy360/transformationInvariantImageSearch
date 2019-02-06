@@ -1,7 +1,17 @@
+import hashlib
+import os
+import pathlib
+import shutil
+
+from appdirs import user_data_dir
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
 
 DB = SQLAlchemy()
+DATA_DIR = user_data_dir('transformation_invariant_image_search', 'Tom Murphy')
+pathlib.Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
+DEFAULT_IMAGE_DIR = os.path.join(DATA_DIR, 'image')
 
 triangle_points = DB.Table(
     'triangle_points',
@@ -75,3 +85,76 @@ def get_or_create(session, model, **kwargs):
         session.add(instance)
         created = True
     return instance, created
+
+
+def get_image_path(checksum_value, ext, img_dir=DEFAULT_IMAGE_DIR):
+    """Get image path.
+    >>> import tempfile
+    >>> image_fd = tempfile.mkdtemp()
+    >>> get_image_path(
+    ...     '54abb6e1eb59cccf61ae356aff7e491894c5ca606dfda4240d86743424c65faf',
+    ...     'png', image_fd)
+    '.../54/54abb6e1eb59cccf61ae356aff7e491894c5ca606dfda4240d86743424c65faf.png'
+    """
+    return os.path.join(img_dir, checksum_value[:2], '{}.{}'.format(checksum_value, ext))
+
+
+def get_or_create_checksum_model(session, filename, img_dir=DEFAULT_IMAGE_DIR):
+    """Get or create checksum model.
+    >>> import tempfile
+    >>> from . import main
+    >>> filename = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> image_fd = tempfile.mkdtemp()
+    >>> app = main.create_app(db_uri='sqlite://')
+    >>> app.app_context().push()
+    >>> DB.create_all()
+    >>> get_or_create_checksum_model(DB.session, filename, image_fd)
+    (<Checksum(v=54abb6e, ext=png, trash=False)>, ...)
+    >>> res = get_or_create_checksum_model(DB.session, filename, image_fd)
+    >>> res
+    (<Checksum(v=54abb6e, ext=png, trash=False)>, False)
+    >>> m = res[0]
+    >>> os.path.isfile(get_image_path(m.value, m.ext, image_fd))
+    True
+    """
+    pil_img = Image.open(filename)
+    sha256 = hashlib.sha256()
+    with open(filename, 'rb') as f:
+        for block in iter(lambda: f.read(128*1024), b''):
+            sha256.update(block)
+    sha256_csum = sha256.hexdigest()
+    m, created = get_or_create(session, Checksum, value=sha256_csum)
+    m.ext = pil_img.format.lower()
+    m.trash = False
+    dst_file = get_image_path(m.value, m.ext, img_dir)
+    pathlib.Path(os.path.dirname(dst_file)).mkdir(parents=True, exist_ok=True)
+    shutil.copy(filename, dst_file)
+    return m, created
+
+
+def get_duplicate(session, filename=None, csm_m=None, img_dir=DEFAULT_IMAGE_DIR):
+    """Get duplicate data.
+    >>> import tempfile
+    >>> from . import main
+    >>> filename1 = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> filename2 = 'fullEndToEndDemo/inputImages/cat1.png'
+    >>> image_fd = tempfile.mkdtemp()
+    >>> app = main.create_app(db_uri='sqlite://')
+    >>> app.app_context().push()
+    >>> DB.create_all()
+    >>> get_duplicate(DB.session, filename1)
+    []
+    >>> m = DB.session.query(Checksum).filter_by(id=1).first()
+    >>> len(m.triangle_phashes)
+    0
+    """
+    if filename is None and csm_m is not None:
+        # TODO
+        raise NotImplementedError
+    m = get_or_create_checksum_model(session, filename, img_dir=img_dir)[0]
+    if m.triangle_phashes == 0:
+        img = cv2.imread(filename)
+        keypoints = compute_keypoints(img)
+        triangles = triangles_from_keypoints(keypoints, lower=50, upper=400)
+        hashes = phash_triangles(img, triangles)
+    return []

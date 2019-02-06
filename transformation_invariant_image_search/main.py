@@ -35,15 +35,17 @@ from flask import (
 
 from .keypoints import compute_keypoints
 from .phash import triangles_from_keypoints, hash_triangles
-from .models import DB, Checksum
+from .models import (
+    DB,
+    Checksum,
+    DATA_DIR,
+    DEFAULT_IMAGE_DIR
+)
 from . import models
 
 
 __version__ = '0.0.1'
-DATA_DIR = user_data_dir('transformation_invariant_image_search', 'Tom Murphy')
-pathlib.Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
 DEFAULT_DB_URI = 'sqlite:///{}'.format(os.path.join(DATA_DIR, 'tiis.db'))
-DEFAULT_IMAGE_DIR = os.path.join(DATA_DIR, 'image')
 
 
 def phash_triangles(img, triangles, batch_size=None):
@@ -141,6 +143,7 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI, image_dir=DEFAULT_IMAGE_
     )
     #  index_view=views.HomeView(name='Home', template='transformation_invariant_image_search/index.html', url='/'))  # NOQA
     app.add_url_rule('/api/checksum', 'checksum_list', checksum_list, methods=['GET', 'POST'])
+    app.add_url_rule('/api/checksum/<int:cid>/duplicate', 'checksum_duplicate', checksum_duplicate)
     app.add_url_rule('/api/image', 'image_list', image_list, methods=['GET', 'POST'])
     app.add_url_rule('/i/<path:filename>', 'image_url', image_url)
     return app
@@ -150,6 +153,14 @@ def image_url(filename):
     img_dir = current_app.config.get('IMAGE_DIR')
     return send_from_directory(
         img_dir, os.path.join(filename[:2], filename))
+
+
+def checksum_duplicate(cid):
+    m = DB.session.query(Checksum).filter_by(id=cid).first_or_404()
+    if not m.triangle_phashes:
+        # TODO
+        return jsonify([])
+    return jsonify([])
 
 
 def checksum_list():
