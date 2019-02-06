@@ -34,6 +34,7 @@ setup(
         'redis',
         'scikit-learn',
         'scipy',
+        'SQLAlchemy-Utils>=0.33.11',
         'tqdm>=4.29.1',
     ],
     extras_require={
