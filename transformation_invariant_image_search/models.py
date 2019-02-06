@@ -24,8 +24,8 @@ class Checksum(Base):
     ext = DB.Column(DB.String(), nullable=False)
 
     def __repr__(self):
-        templ = '<Checksum(v={0.value[:7], ext={0.ext}, trash={0.trash}})>'
-        return templ.format(self)
+        templ = '<Checksum(v={1}, ext={0.ext}, trash={0.trash})>'
+        return templ.format(self, self.value[:7])
 
 
 class Point(Base):
@@ -46,8 +46,8 @@ class Phash(Base):
 
 
 class TrianglePhash(Base):
-    checksum_id = DB.Column()
-    checksum = DB.Column()
+    checksum_id = DB.Column(DB.Integer, DB.ForeignKey('checksum.id'), nullable=False)
+    checksum = DB.relationship('Checksum', backref='triangle_phashes', lazy=True)
     points = DB.relationship('Point', secondary=triangle_points, lazy='subquery',
         backref=DB.backref('triangle_phashes', lazy=True))
     phashes =  DB.relationship('Phash', secondary=triangle_phashes, lazy='subquery',

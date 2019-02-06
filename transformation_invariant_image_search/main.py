@@ -99,8 +99,8 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('TIIS_SECRET_KEY') or os.urandom(24)
     app.config['WTF_CSRF_ENABLED'] = False
+    DB.init_app(app)
     # app and db
-    #  DB.init_app(app)
     #  app.app_context().push()
     #  db.create_all()
 
