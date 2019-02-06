@@ -5,14 +5,16 @@ Usage: main.py lookup <image>...
 from collections import Counter
 from os import cpu_count
 import multiprocessing
-import sys
 import os
+import platform
+import sys
 
 from flask import Flask
 from flask.cli import FlaskGroup
 from flask_admin import Admin, AdminIndexView
 import click
 import cv2
+import flask
 import numpy as np
 import redis
 
@@ -109,22 +111,34 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
 
 
 def get_custom_version(ctx, param, value):
-    #  if not value or ctx.resilient_parsing:
-        #  return
-    message = '{app_name} {app_version}\nFlask {version}\nPython {python_version}'
-    click.echo(message.format(**{
+    """Output modified --version flag result.
+
+    Modified from:
+    https://github.com/pallets/flask/blob/master/flask/cli.py
+    """
+    if not value or ctx.resilient_parsing:
+        return
+    import werkzeug
+    message = (
+        '%(app_name)s %(app_version)s\n'
+        'Python %(python)s\n'
+        'Flask %(flask)s\n'
+        'Werkzeug %(werkzeug)s'
+    )
+    click.echo(message % {
         'app_name': 'Transformation Invariant Image Search',
         'app_version': __version__,
-        'version': flask_version,
-        'python_version': sys.version,
-    }), color=ctx.color)
+        'python': platform.python_version(),
+        'flask': flask.__version__,
+        'werkzeug': werkzeug.__version__,
+    }, color=ctx.color)
     ctx.exit()
 
 
 class CustomFlaskGroup(FlaskGroup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.params[0].help = 'Show the program version'
+        self.params[0].help = 'Show the program version.'
         self.params[0].callback = get_custom_version
 
 

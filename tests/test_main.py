@@ -34,7 +34,10 @@ def test_empty_db(client):
 
 @pytest.mark.parametrize(
     'args,word',
-    [('--help', 'Usage:'), ('--version', None)]
+    [
+        ('--help', 'Usage:'),
+        ('--version', 'Transformation Invariant Image Search')
+    ]
 )
 def test_cli(args, word):
     runner = CliRunner()
