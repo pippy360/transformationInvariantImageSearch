@@ -99,8 +99,8 @@ def triangles_from_keypoints(keypoints, lower=50, upper=400):
     >>> res = triangles_from_keypoints(keypoints)
     >>> len(res)
     11590
-    >>> res[0]
-    (array([162., 203.]), array([261.,  76.]), array([131.,  63.]))
+    >>> print(list(map(lambda x: x.tolist(), res[0])))
+    [[162.0, 203.0], [261.0, 76.0], [131.0, 63.0]]
     """
     keypoints = np.asarray(keypoints, dtype=float)
 
