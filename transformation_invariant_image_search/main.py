@@ -13,6 +13,7 @@ import sys
 import tempfile
 import pathlib
 
+from appdirs import user_data_dir
 from flask import current_app, Flask, jsonify, request
 from flask.cli import FlaskGroup
 from flask_admin import Admin, AdminIndexView
@@ -32,8 +33,10 @@ from . import models
 
 
 __version__ = '0.0.1'
-DEFAULT_DB_URI = None
-DEFAULT_IMAGE_DIR = None
+DATA_DIR = user_data_dir('transformation_invariant_image_search', 'Tom Murphy')
+pathlib.Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
+DEFAULT_DB_URI = 'sqlite:///{}'.format(os.path.join(DATA_DIR, 'tiis.db'))
+DEFAULT_IMAGE_DIR = os.path.join(DATA_DIR, 'image')
 
 
 def phash_triangles(img, triangles, batch_size=None):
