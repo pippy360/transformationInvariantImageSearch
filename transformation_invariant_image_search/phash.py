@@ -90,6 +90,18 @@ def hash_triangles(img, triangles):
 
 
 def triangles_from_keypoints(keypoints, lower=50, upper=400):
+    """Get Triangles from keypoints.
+
+    >>> from .keypoints import compute_keypoints
+    >>> filename = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> img = cv2.imread(filename)
+    >>> keypoints = compute_keypoints(img)
+    >>> res = triangles_from_keypoints(keypoints)
+    >>> len(res)
+    11590
+    >>> res[0]
+    (array([162., 203.]), array([261.,  76.]), array([131.,  63.]))
+    """
     keypoints = np.asarray(keypoints, dtype=float)
 
     tree = BallTree(keypoints, leaf_size=10)

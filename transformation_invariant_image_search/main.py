@@ -28,6 +28,18 @@ DEFAULT_DB_URI = None
 
 
 def phash_triangles(img, triangles, batch_size=None):
+    """Get phash from triangles.
+
+    >>> filename = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> img = cv2.imread(filename)
+    >>> keypoints = compute_keypoints(img)
+    >>> triangles = triangles_from_keypoints(keypoints)
+    >>> res = phash_triangles(img, triangles)
+    >>> len(res)
+    34770
+    >>> sorted(res)[0]
+    '0000563b8d730d07'
+    """
     n = len(triangles)
 
     if batch_size is None:

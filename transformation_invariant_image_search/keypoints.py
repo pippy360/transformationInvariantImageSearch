@@ -56,6 +56,16 @@ def recolour(img, gauss_width=41):
 
 
 def compute_keypoints(img):
+    """Compute keypoints.
+
+    >>> filename = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> img = cv2.imread(filename)
+    >>> res = compute_keypoints(img)
+    >>> len(res) == 50
+    True
+    >>> sorted(res)[0]
+    (1.0, 26.0)
+    """
     gauss_width = 21
     img = recolour(img, gauss_width)
     b, _, _ = cv2.split(img)
