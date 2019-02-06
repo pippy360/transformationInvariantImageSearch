@@ -108,8 +108,9 @@ def get_or_create_checksum_model(session, filename, img_dir=DEFAULT_IMAGE_DIR):
     >>> app = main.create_app(db_uri='sqlite://')
     >>> app.app_context().push()
     >>> DB.create_all()
+    >>> _ = Checksum.query.delete()
     >>> get_or_create_checksum_model(DB.session, filename, image_fd)
-    (<Checksum(v=54abb6e, ext=png, trash=False)>, ...)
+    (<Checksum(v=54abb6e, ext=png, trash=False)>, True)
     >>> res = get_or_create_checksum_model(DB.session, filename, image_fd)
     >>> res
     (<Checksum(v=54abb6e, ext=png, trash=False)>, False)
