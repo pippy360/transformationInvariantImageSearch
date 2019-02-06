@@ -31,6 +31,7 @@ setup(
         'hiredis',
         'numpy',
         'opencv-python>=4.0.0.21',
+        'Pillow>=5.4.1',
         'redis',
         'scikit-learn',
         'scipy',
