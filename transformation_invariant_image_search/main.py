@@ -4,15 +4,20 @@ Usage: main.py lookup <image>...
 """
 from collections import Counter
 from os import cpu_count
+import hashlib
 import multiprocessing
 import os
 import platform
+import shutil
 import sys
+import tempfile
+import pathlib
 
-from flask import Flask, jsonify, request
+from flask import current_app, Flask, jsonify, request
 from flask.cli import FlaskGroup
 from flask_admin import Admin, AdminIndexView
 from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
 from sqlalchemy_utils import database_exists, create_database
 import click
 import cv2
@@ -28,6 +33,7 @@ from . import models
 
 __version__ = '0.0.1'
 DEFAULT_DB_URI = None
+DEFAULT_IMAGE_DIR = None
 
 
 def phash_triangles(img, triangles, batch_size=None):
@@ -95,13 +101,14 @@ def lookup(chunks, filename):
         print(f'{num:<10d} {key.decode("utf-8")}')
 
 
-def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
+def create_app(script_info=None, db_uri=DEFAULT_DB_URI, image_dir=DEFAULT_IMAGE_DIR):
     """create app."""
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = db_uri # NOQA
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SECRET_KEY'] = os.getenv('TIIS_SECRET_KEY') or os.urandom(24)
     app.config['WTF_CSRF_ENABLED'] = False
+    app.config['IMAGE_DIR'] = image_dir
     DB.init_app(app)
     if not database_exists(db_uri):
         create_database(db_uri)
@@ -124,6 +131,7 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
     )
     #  index_view=views.HomeView(name='Home', template='transformation_invariant_image_search/index.html', url='/'))  # NOQA
     app.add_url_rule('/api/checksum', 'checksum_list', checksum_list, methods=['GET', 'POST'])
+    app.add_url_rule('/api/image', 'image_list', image_list, methods=['GET', 'POST'])
     return app
 
 
@@ -146,6 +154,42 @@ def checksum_list():
             DB.session.commit()
         return jsonify(m.to_dict())
     ms = DB.session.query(Checksum).paginate(1, 10).items
+    return jsonify([x.to_dict() for x in ms])
+
+
+def image_list():
+    if request.method == 'POST':
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file part'})
+        file_ = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file_.filename == '':
+            return jsonify({'error': 'No selected file'})
+        with tempfile.NamedTemporaryFile(delete=False) as f:
+            file_.save(f.name)
+            pil_img = Image.open(f.name)
+            sha256 = hashlib.sha256()
+            with open(f.name, 'rb') as f:
+                for block in iter(lambda: f.read(128*1024), b''):
+                    sha256.update(block)
+            sha256_csum = sha256.hexdigest()
+            image_dir = current_app.config.get('IMAGE_DIR', None)
+            if image_dir is None:
+                return jsonify({'error': 'Image dir is not specified'})
+            ext = pil_img.format.lower()
+            dst_file = os.path.join(
+                image_dir, sha256_csum[:2], '{}.{}'.format(sha256_csum, ext))
+            m = models.get_or_create(DB.session, Checksum, value=sha256_csum)[0]
+            m.ext = ext
+            m.trash = False
+            pathlib.Path(os.path.dirname(dst_file)).mkdir(parents=True, exist_ok=True)
+            shutil.move(f.name, dst_file)
+            DB.session.add(m)
+            DB.session.commit()
+            return jsonify(m.to_dict())
+    ms = DB.session.query(Checksum).filter_by(trash=False).paginate(1, 10).items
     return jsonify([x.to_dict() for x in ms])
 
 
