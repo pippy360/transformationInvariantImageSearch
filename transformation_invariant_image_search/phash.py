@@ -86,7 +86,7 @@ def hash_triangles(img, triangles):
         transform = target_points @ input_points_inverse @ transpose_m
         transform = transform[:, :2, :]
 
-        range_list = tqdm.tqdm(range_list) if len(range_list) > 1 else range(n)
+        range_list = tqdm.tqdm(range(n)) if len(range(n)) > 1 else range(n)
         for k in range_list:
             image = cv2.warpAffine(img, transform[k], size)
 
