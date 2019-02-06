@@ -6,6 +6,8 @@ import tqdm
 
 HEX_STRINGS = np.array([f'{x:02x}' for x in range(256)])
 BIN_POWERS = 2 ** np.arange(8)
+TRIANGLE_LOWER = 50
+TRIANGLE_UPPER = 400
 
 
 def phash(image, hash_size=8, highfreq_factor=4):
@@ -26,6 +28,19 @@ def hash_to_hex(a):
 
 
 def hash_triangles(img, triangles):
+    """Get hash triangles.
+    >>> from .keypoints import compute_keypoints
+    >>> filename = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> img = cv2.imread(filename)
+    >>> keypoints = compute_keypoints(img)
+    >>> triangles = triangles_from_keypoints(keypoints)
+    >>> res = hash_triangles(img, triangles)
+    >>> len(res), sorted(res)[0]
+    (34770, '0000563b8d730d07')
+    >>> res = hash_triangles(img, [triangles[0]])
+    >>> len(res), sorted(res)
+    (3, ['709a3765dd04b0f3', 'b8dd5c4e7a352cea', 'de433036010bb391'])
+    """
     n = len(triangles)
     triangles = np.asarray(triangles)
 
@@ -51,7 +66,7 @@ def hash_triangles(img, triangles):
     # rotate triangles 3 times, one for each edge of the triangle
     rotations = (0, 1, 2), (1, 2, 0), (2, 0, 1)
 
-    for i, rotation in enumerate(tqdm.tqdm(rotations)):
+    for i, rotation in enumerate(rotations):
         p = triangles[:, rotation, :]
 
         p0 = p[:, 0]
@@ -71,7 +86,8 @@ def hash_triangles(img, triangles):
         transform = target_points @ input_points_inverse @ transpose_m
         transform = transform[:, :2, :]
 
-        for k in tqdm.tqdm(range(n)):
+        range_list = tqdm.tqdm(range_list) if len(range_list) > 1 else range(n)
+        for k in range_list:
             image = cv2.warpAffine(img, transform[k], size)
 
             # calculate dct for perceptual hash
@@ -89,7 +105,7 @@ def hash_triangles(img, triangles):
     return hash_to_hex(hashes)
 
 
-def triangles_from_keypoints(keypoints, lower=50, upper=400):
+def triangles_from_keypoints(keypoints, lower=TRIANGLE_LOWER, upper=TRIANGLE_UPPER):
     """Get Triangles from keypoints.
 
     >>> from .keypoints import compute_keypoints
@@ -101,6 +117,12 @@ def triangles_from_keypoints(keypoints, lower=50, upper=400):
     11590
     >>> print(list(map(lambda x: x.tolist(), res[0])))
     [[162.0, 203.0], [261.0, 76.0], [131.0, 63.0]]
+    >>> res2 = triangles_from_keypoints(keypoints, lower=10)
+    >>> len(res2)
+    14238
+    >>> res3 = triangles_from_keypoints(keypoints, upper=100)
+    >>> len(res3)
+    315
     """
     keypoints = np.asarray(keypoints, dtype=float)
 
