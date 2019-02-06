@@ -31,7 +31,7 @@ def client():
 def test_empty_db(client):
     """Start with a blank database."""
     rv = client.get('/')
-    assert b'Home - Transformation Image Search' in rv.data
+    assert b'Home - Transformation Invariant Image Search' in rv.data
 
 
 def test_checksum_get(client):

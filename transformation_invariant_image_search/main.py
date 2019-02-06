@@ -125,10 +125,10 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI, image_dir=DEFAULT_IMAGE_
     #  Migrate(app, DB)
     # flask-admin
     app_admin = Admin(
-        app, name='Transformation Image Search', template_mode='bootstrap3',
+        app, name='Transformation Invariant Image Search', template_mode='bootstrap3',
         index_view=AdminIndexView(
-            #  name='Home',
-            #  template='admin/myhome.html',
+            name='Home',
+            template='tiis/index.html',
             url='/'
         )
     )
