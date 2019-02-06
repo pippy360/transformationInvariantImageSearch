@@ -1,5 +1,41 @@
 {% extends 'admin/master.html' %}
 
 {% block body %}
-hello world
+<div class="col-md-12">
+  <form method="post" action="" enctype="multipart/form-data" id="myform">
+    <div class="form-group">
+      <label for="file">File input</label>
+      <input type="file" id="file" name="file" class="btn btn-default"/>
+    </div>
+    <input type="button" onclick="uploadFile()" class="button btn btn-default" value="Upload" id="but_upload">
+  </form>
+</div>
+<div class='preview col-md-6'> <img class="img-responsive center-block" style="height:500px" id="img"> </div>
+<script>
+{# modified from 
+"https://stackoverflow.com/a/8758614/1766261"
+#}
+function uploadFile(){
+  $(".preview img").hide(); // Display image element
+  $.ajax({
+    // Your server script to process the upload
+    url: "{{url_for('image_list')}}",
+    type: 'POST',
+    // Form data
+    data: new FormData($('form')[0]),
+
+    // Tell jQuery not to process data or worry about content-type
+    // You *must* include these options!
+    cache: false,
+    contentType: false,
+    processData: false,
+
+    // on success
+    success: function(data){
+      $("#img").attr("src", data["url"][0]); 
+      $(".preview img").show(); // Display image element
+    },
+  });
+}
+</script>
 {% endblock %}

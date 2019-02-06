@@ -14,7 +14,6 @@ import tempfile
 import pathlib
 
 from appdirs import user_data_dir
-from flask import current_app, Flask, jsonify, request
 from flask.cli import FlaskGroup
 from flask_admin import Admin, AdminIndexView
 from flask_sqlalchemy import SQLAlchemy
@@ -25,6 +24,14 @@ import cv2
 import flask
 import numpy as np
 import redis
+from flask import (
+    current_app,
+    Flask,
+    jsonify,
+    request,
+    send_from_directory,
+    url_for,
+)
 
 from .keypoints import compute_keypoints
 from .phash import triangles_from_keypoints, hash_triangles
@@ -135,7 +142,14 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI, image_dir=DEFAULT_IMAGE_
     #  index_view=views.HomeView(name='Home', template='transformation_invariant_image_search/index.html', url='/'))  # NOQA
     app.add_url_rule('/api/checksum', 'checksum_list', checksum_list, methods=['GET', 'POST'])
     app.add_url_rule('/api/image', 'image_list', image_list, methods=['GET', 'POST'])
+    app.add_url_rule('/i/<path:filename>', 'image_url', image_url)
     return app
+
+
+def image_url(filename):
+    img_dir = current_app.config.get('IMAGE_DIR')
+    return send_from_directory(
+        img_dir, os.path.join(filename[:2], filename))
 
 
 def checksum_list():
@@ -191,7 +205,11 @@ def image_list():
             shutil.move(f.name, dst_file)
             DB.session.add(m)
             DB.session.commit()
-            return jsonify(m.to_dict())
+            dict_res = m.to_dict()
+            dict_res['url'] = url_for(
+                '.image_url', _external=True,
+            filename='{}.{}'.format(m.value, m.ext)),
+            return jsonify(dict_res)
     ms = DB.session.query(Checksum).filter_by(trash=False).paginate(1, 10).items
     return jsonify([x.to_dict() for x in ms])
 

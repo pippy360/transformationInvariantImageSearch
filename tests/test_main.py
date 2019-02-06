@@ -62,7 +62,9 @@ def test_image_post(client):
     assert rv.get_json()['error']
     file_data = {'file': open(filename, 'rb')}
     rv = client.post(url, data=file_data)
-    assert rv.get_json() == exp_dict
+    post_exp_dict = exp_dict.copy()
+    post_exp_dict['url'] = ['http://localhost/i/{}.{}'.format(csm_value, ext)]
+    assert rv.get_json() == post_exp_dict
     image_dir = client.application.config.get('IMAGE_DIR')
     exp_dst_file = os.path.join(image_dir, csm_value[:2], '{}.{}'.format(csm_value, ext))
     assert os.path.isfile(exp_dst_file)
