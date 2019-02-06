@@ -9,9 +9,11 @@ import os
 import platform
 import sys
 
-from flask import Flask
+from flask import Flask, jsonify, request
 from flask.cli import FlaskGroup
 from flask_admin import Admin, AdminIndexView
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy_utils import database_exists, create_database
 import click
 import cv2
 import flask
@@ -20,7 +22,8 @@ import redis
 
 from .keypoints import compute_keypoints
 from .phash import triangles_from_keypoints, hash_triangles
-from .models import DB
+from .models import DB, Checksum
+from . import models
 
 
 __version__ = '0.0.1'
@@ -100,9 +103,10 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
     app.config['SECRET_KEY'] = os.getenv('TIIS_SECRET_KEY') or os.urandom(24)
     app.config['WTF_CSRF_ENABLED'] = False
     DB.init_app(app)
-    # app and db
-    #  app.app_context().push()
-    #  db.create_all()
+    if not database_exists(db_uri):
+        create_database(db_uri)
+        with app.app_context():
+            DB.create_all()
 
     @app.shell_context_processor
     def shell_context():
@@ -119,7 +123,30 @@ def create_app(script_info=None, db_uri=DEFAULT_DB_URI):
         )
     )
     #  index_view=views.HomeView(name='Home', template='transformation_invariant_image_search/index.html', url='/'))  # NOQA
+    app.add_url_rule('/api/checksum', 'checksum_list', checksum_list, methods=['GET', 'POST'])
     return app
+
+
+def checksum_list():
+    if request.method == 'POST':
+        csm_value = request.form.get('value', None)
+        if not csm_value:
+            return jsonify({})
+        m = DB.session.query(Checksum).filter_by(value=csm_value).first()
+        if m is None:
+            kwargs = dict(value=csm_value)
+            ext = request.form.get('ext', None)
+            if ext is not None:
+                kwargs['ext'] = ext
+            trash = request.form.get('trash', None)
+            if trash is not None:
+                kwargs['trash'] = trash
+            m = Checksum(**kwargs)
+            DB.session.add(m)
+            DB.session.commit()
+        return jsonify(m.to_dict())
+    ms = DB.session.query(Checksum).paginate(1, 10).items
+    return jsonify([x.to_dict() for x in ms])
 
 
 def get_custom_version(ctx, param, value):

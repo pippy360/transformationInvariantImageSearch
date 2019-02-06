@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 
@@ -10,14 +11,12 @@ from transformation_invariant_image_search import main
 
 @pytest.fixture
 def client():
-    app = main.create_app()
-    db_fd, app.config['DATABASE'] = tempfile.mkstemp()
+    db_fd, config_db = tempfile.mkstemp()
+    db_uri = 'sqlite:///{}'.format(config_db)
+    app = main.create_app(db_uri=db_uri)
+    app.config['DATABASE'] = config_db
     app.config['TESTING'] = True
     client = app.test_client()
-
-    with app.app_context():
-        #  flaskr.init_db()
-        pass
 
     yield client
 
@@ -27,9 +26,26 @@ def client():
 
 def test_empty_db(client):
     """Start with a blank database."""
-
     rv = client.get('/')
     assert b'Home - Transformation Image Search' in rv.data
+
+
+def test_checksum_get(client):
+    """test checksum with a blank database."""
+    url = '/api/checksum'
+    rv = client.get(url)
+    assert rv.get_json() == {}
+
+
+def test_checksum_post(client):
+    """Start with a blank database."""
+    csm_value = '54abb6e1eb59cccf61ae356aff7e491894c5ca606dfda4240d86743424c65faf'
+    url = '/api/checksum'
+    exp_dict = dict(value=csm_value, id=1, ext='png', trash=False)
+    rv = client.post(url, data=dict(value=csm_value, ext='png'))
+    assert rv.get_json() == exp_dict
+    rv = client.get(url)
+    assert rv.get_json() == [exp_dict]
 
 
 @pytest.mark.parametrize(

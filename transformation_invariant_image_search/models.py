@@ -27,6 +27,10 @@ class Checksum(Base):
         templ = '<Checksum(v={1}, ext={0.ext}, trash={0.trash})>'
         return templ.format(self, self.value[:7])
 
+    def to_dict(self):
+        keys = ['value', 'trash', 'ext', 'id']
+        return {k: getattr(self, k) for k in keys}
+
 
 class Point(Base):
     x = DB.Column(DB.Integer(), nullable=False)
