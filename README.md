@@ -27,7 +27,7 @@ Instead of running these commands manually you can run the ./setup.sh script whi
 
 Or if you want to run the commands manually...
 
-```
+```console
 # From the root of the repo go to ./fullEndToEndDemo
 cd ./fullEndToEndDemo
 
@@ -56,7 +56,7 @@ This setup was tested on a newly deployed vm on Ubuntu 18.04 LTS, YMMV on differ
 
 To use python package, do the following:
 
-```
+```console
 sudo apt-get update
 sudo apt-get install python3-pip python3-opencv redis-server -y
 
@@ -92,7 +92,7 @@ The demo takes <s>2 minutes</s> (1 minute 38 seconds*) to run on a quad core VM 
 
 *Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
-```
+```console
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo1.sh 
 Loading image: inputImages/cat1.png ... done
 Added 46725 image fragments to DB
@@ -133,8 +133,8 @@ sys     0m6.592s
 python example
 
 ```console
-$ time transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat*  && \
-  time transformation-invariant-image-search lookup fullEndToEndDemo/inputImages/cat_original.png
+$ time transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat*  &&  \
+$ time transformation-invariant-image-search lookup fullEndToEndDemo/inputImages/cat_original.png
 
 loading fullEndToEndDemo/inputImages/cat1.png
 100%|██| 3/3 [00:07<00:00,  2.66s/it]
@@ -217,7 +217,7 @@ Here the two images mona.jpg and van_gogh.jpg are inserted into the database and
 
 *Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
-```
+```console
 user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo2.sh 
 Loading image: ./inputImages/mona.jpg ... done
 Added 26991 image fragments to DB
@@ -238,7 +238,7 @@ python example
 
 ```console
 $ time transformation-invariant-image-search insert ./fullEndToEndDemo/inputImages/mona.jpg ./fullEndToEndDemo/inputImages/van_gogh.jpg && \
-  time transformation-invariant-image-search lookup ./fullEndToEndDemo/inputImages/monaComposite.jpg
+$ time transformation-invariant-image-search lookup ./fullEndToEndDemo/inputImages/monaComposite.jpg
 
 loading ./fullEndToEndDemo/inputImages/mona.jpg
 100%|███| 3/3 [00:03<00:00,  1.24s/it]
