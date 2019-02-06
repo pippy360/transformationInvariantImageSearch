@@ -30,6 +30,7 @@ setup(
         'Flask>=1.0.2',
         'hiredis',
         'numpy',
+        'opencv-python>=4.0.0.21',
         'redis',
         'scikit-learn',
         'scipy',
