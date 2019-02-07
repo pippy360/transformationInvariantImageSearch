@@ -138,7 +138,8 @@ def get_duplicate(
         if filename:
             img = cv2.imread(filename)
         else:
-            img = cv2.imread(get_image_path(m.value, m.ext, img_dir))
+            img = cv2.imread(
+                models.get_image_path(m.value, m.ext, img_dir))
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(
             keypoints, lower=triangle_lower, upper=triangle_upper)
@@ -248,7 +249,7 @@ def image_url(filename):
 
 def checksum_duplicate(cid):
     m = DB.session.query(Checksum).filter_by(id=cid).first_or_404()
-    res = models.get_duplicate(
+    res = get_duplicate(
         DB.session, csm_m=m, triangle_lower=100, triangle_upper=300
     )
     dict_list = [x.to_dict() for x in res]
