@@ -1,3 +1,4 @@
+from itertools import zip_longest
 import hashlib
 import os
 import pathlib
@@ -146,8 +147,19 @@ def get_or_create_checksum_model(session, filename, img_dir=DEFAULT_IMAGE_DIR):
     return m, created
 
 
+def grouper(iterable, n, fillvalue=None):
+    """Collect data into fixed-length chunks or blocks.
+    taken from:
+    https://docs.python.org/3/library/itertools.html#itertools.zip_longest
+    >>> list(grouper('ABCDEFG', 3, 'x'))
+    [('A', 'B', 'C'), ('D', 'E', 'F'), ('G', 'x', 'x')]
+    """
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
+
+
 def get_duplicate(
-        session, filename=None, csm_m=None, img_dir=DEFAULT_IMAGE_DIR,
+        session, filename, img_dir=DEFAULT_IMAGE_DIR,
         triangle_lower=TRIANGLE_LOWER, triangle_upper=TRIANGLE_UPPER):
     """Get duplicate data.
     >>> import tempfile
@@ -158,70 +170,43 @@ def get_duplicate(
     >>> app = main.create_app(db_uri='sqlite://')
     >>> app.app_context().push()
     >>> DB.create_all()
-    >>> get_duplicate(DB.session, filename1, triangle_lower=100)
+    >>> triangle_lower = 100
+    >>> get_duplicate(DB.session, filename1, triangle_lower=triangle_lower)
     []
     >>> m = DB.session.query(Checksum).filter_by(id=1).first()
     >>> len(m.phashes)
     15211
+    >>> get_duplicate(DB.session, filename2, triangle_lower=triangle_lower)
+    [<Checksum(v=54abb6e, ext=png, trash=False)>]
     """
-    if filename is None and csm_m is not None:
-        # TODO
-        raise NotImplementedError
-    m = get_or_create_checksum_model(session, filename, img_dir=img_dir)[0]
+    res = []
+    m, created = get_or_create_checksum_model(session, filename, img_dir=img_dir)
+    if created:
+        session.add(m)
+        session.commit()
     if not m.triangle_phashes:
         img = cv2.imread(filename)
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(keypoints, lower=triangle_lower, upper=triangle_upper)
-        res = []
         hash_list = []
         for triangle in tqdm.tqdm(triangles):
             hashes = hash_triangles(img, [triangle])
-            res.append((triangle, hashes))
             hash_list.extend(hashes)
-        keypoint_m_dict = {}
-        for item in tqdm.tqdm(set(keypoints)):
-            keypoint_m_dict.setdefault(item[0], {})[item[1]] = \
-                get_or_create(session, Point, x=item[0], y=item[1])[0]
-        save_set = False
-        bulk_save = True
-        if save_set:
-            raise NotImplementedError
-        if bulk_save:
-            session.bulk_save_objects([
-                Phash(value=item) for item in tqdm.tqdm(set(hash_list))
-            ])
-            m.phashes = session.query(Phash).all()
-        elif not bulk_save and save_set:
-            hashes_m_dict = {x: get_or_create(session, Phash, value=x)[0] for x in tqdm.tqdm(set(hash_list))}
-        else:
-            hash_list = [get_or_create(session, Phash, value=x)[0] for x in tqdm.tqdm(set(hash_list))]
-            m.phashes = hash_list
-        if save_set:
-            if bulk_save:
-                session.bulk_save_objects([
-                    Phash(value=item) for item in tqdm.tqdm(set(hash_list))
-                ])
-            else:
-                hashes_m_dict = {x: get_or_create(session, Phash, value=x)[0] for x in tqdm.tqdm(set(hash_list))}
-            if bulk_save:
-                session.bulk_save_objects([
-                    TrianglePhash(
-                        checksum_id=m.id,
-                        checksum=m,
-                        points=[keypoint_m_dict[po[0]][po[1]] for po in item[0]],
-                        phashes=[hashes_m_dict[ph] for ph in item[1]]
-                    ) for item in tqdm.tqdm(res)
-                ])
-            else:
-                tp_ms =  [
-                    TrianglePhash(
-                        checksum_id=m.id,
-                        checksum=m,
-                        points=[keypoint_m_dict[po[0]][po[1]] for po in item[0]],
-                        phashes=[hashes_m_dict[ph] for ph in item[1]]
-                    ) for item in tqdm.tqdm(res)
-                ]
-                list(map(session.add, tp_ms))
+        hash_list = set(hash_list)  # deduplicate hash_list
+        hash_list_ms = session.query(Phash).filter(Phash.value.in_(hash_list)).all()
+        hash_list_ms_values = [x.value for x in hash_list_ms]
+        not_in_db_hash_list = [x for x in hash_list if x not in hash_list_ms_values]
+        if not_in_db_hash_list:
+            for hash_group in tqdm.tqdm(grouper(not_in_db_hash_list, 100)):
+                session.add_all(
+                    [Phash(value=i) for i in hash_group if i])
+            session.flush
+            session.commit()
+        hash_list_ms = session.query(Phash).filter(Phash.value.in_(hash_list)).all()
+        m.phashes = hash_list_ms
         session.add(m)
         session.commit()
-    return []
+    if session.query(Checksum).count() > 1:
+        res = session.query(Checksum).filter(Checksum.phashes.any(Phash.value.in_(hash_list))) \
+            .filter(Checksum.value != m.value).all()
+    return res
