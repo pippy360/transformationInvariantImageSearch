@@ -171,17 +171,26 @@ def get_duplicate(
     >>> app.app_context().push()
     >>> DB.create_all()
     >>> triangle_lower = 100
+    >>> triangle_upper = 300
     >>> # Get duplicate from image filename
-    >>> get_duplicate(DB.session, filename1, triangle_lower=triangle_lower)
+    >>> get_duplicate(
+    ...     DB.session, filename1,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
     []
     >>> # Get duplicate from checksum model
     >>> m = DB.session.query(Checksum).filter_by(id=1).first()
-    >>> get_duplicate(DB.session, csm_m=m, triangle_lower=triangle_lower)
+    >>> get_duplicate(
+    ...     DB.session, csm_m=m,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
     []
-    >>> len(m.phashes)  # count phash
-    15211
-    >>> get_duplicate(DB.session, filename2, triangle_lower=triangle_lower)
+    >>> len(m.phashes) > 0
+    True
+    >>> get_duplicate(
+    ...     DB.session, filename2,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
     [<Checksum(v=54abb6e, ext=png, trash=False)>]
+    >>> get_duplicate(DB.session, csm_m=m, triangle_lower=triangle_lower)
+    [<Checksum(v=4aba099, ext=png, trash=False)>]
     """
     if csm_m is not None and filename is not None:
         raise ValueError('Only either checksum model or filename is required')
@@ -193,8 +202,12 @@ def get_duplicate(
     if created:
         session.add(m)
         session.commit()
+    hash_list = None
     if not m.phashes:
-        img = cv2.imread(filename)
+        if filename:
+            img = cv2.imread(filename)
+        else:
+            img = cv2.imread(get_image_path(m.value, m.ext, img_dir))
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(keypoints, lower=triangle_lower, upper=triangle_upper)
         hash_list = []
@@ -216,6 +229,8 @@ def get_duplicate(
         session.add(m)
         session.commit()
     if session.query(Checksum).count() > 1:
+        if hash_list is None:
+            hash_list = [x.value for x in m.phashes]
         res = session.query(Checksum).filter(Checksum.phashes.any(Phash.value.in_(hash_list))) \
             .filter(Checksum.value != m.value).all()
     return res
