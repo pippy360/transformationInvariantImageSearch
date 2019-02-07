@@ -69,7 +69,7 @@ class Phash(Base):
     value = DB.Column(DB.String(), unique=True, nullable=False)
 
     def __repr__(self):
-        templ = '<Phash(v={0.value}})>'
+        templ = '<Phash(v={0.value})>'
         return templ.format(self)
 
 
@@ -166,6 +166,7 @@ def get_duplicate(
     >>> from . import main
     >>> filename1 = 'fullEndToEndDemo/inputImages/cat_original.png'
     >>> filename2 = 'fullEndToEndDemo/inputImages/cat1.png'
+    >>> filename3 = 'fullEndToEndDemo/inputImages/mona.jpg'
     >>> image_fd = tempfile.mkdtemp()
     >>> app = main.create_app(db_uri='sqlite://')
     >>> app.app_context().push()
@@ -191,6 +192,10 @@ def get_duplicate(
     [<Checksum(v=54abb6e, ext=png, trash=False)>]
     >>> get_duplicate(DB.session, csm_m=m, triangle_lower=triangle_lower)
     [<Checksum(v=4aba099, ext=png, trash=False)>]
+    >>> get_duplicate(
+    ...     DB.session, filename3,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
+    []
     """
     if csm_m is not None and filename is not None:
         raise ValueError('Only either checksum model or filename is required')
@@ -219,18 +224,18 @@ def get_duplicate(
         hash_list_ms_values = [x.value for x in hash_list_ms]
         not_in_db_hash_list = [x for x in hash_list if x not in hash_list_ms_values]
         if not_in_db_hash_list:
-            for hash_group in tqdm.tqdm(grouper(not_in_db_hash_list, 100)):
+            for hash_group in tqdm.tqdm(list(grouper(not_in_db_hash_list, 1000))):
                 session.add_all(
                     [Phash(value=i) for i in hash_group if i])
-            session.flush
-            session.commit()
+                session.flush
+                session.commit()
         hash_list_ms = session.query(Phash).filter(Phash.value.in_(hash_list)).all()
         m.phashes = hash_list_ms
         session.add(m)
         session.commit()
     if session.query(Checksum).count() > 1:
-        if hash_list is None:
-            hash_list = [x.value for x in m.phashes]
-        res = session.query(Checksum).filter(Checksum.phashes.any(Phash.value.in_(hash_list))) \
-            .filter(Checksum.value != m.value).all()
+        res = session.query(Checksum).join(Phash.checksums) \
+            .distinct(Checksum.id) \
+            .filter(Phash.checksums.any(Checksum.value == m.value)) \
+            .filter(Checksum.id != m.id).all()
     return res
