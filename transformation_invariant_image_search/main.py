@@ -157,10 +157,17 @@ def image_url(filename):
 
 def checksum_duplicate(cid):
     m = DB.session.query(Checksum).filter_by(id=cid).first_or_404()
-    if not m.triangle_phashes:
-        # TODO
-        return jsonify([])
-    return jsonify([])
+    res = models.get_duplicate(
+        DB.session, csm_m=m, triangle_lower=100, triangle_upper=300
+    )
+    dict_list = [x.to_dict() for x in res]
+    list(map(
+        lambda x: x.update({'url': url_for(
+            '.image_url', _external=True,
+            filename='{}.{}'.format(x['value'], x['ext']))}),
+        dict_list
+    ))
+    return jsonify(dict_list)
 
 
 def checksum_list():
