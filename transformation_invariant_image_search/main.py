@@ -12,6 +12,7 @@ import shutil
 import sys
 import tempfile
 import pathlib
+import logging
 
 from appdirs import user_data_dir
 from flask.cli import FlaskGroup
@@ -144,21 +145,33 @@ def get_duplicate(
         triangles = triangles_from_keypoints(
             keypoints, lower=triangle_lower, upper=triangle_upper)
         hash_list = set(phash_triangles(img, triangles))
-        hash_list_ms = session.query(models.Phash) \
-            .filter(models.Phash.value.in_(hash_list)).all()
+        hash_list_ms = []
+        logging.debug('getting existing phash on db')
+        for hash_group in tqdm.tqdm(
+                list(models.grouper(hash_list, 999))):
+            hash_list_ms.extend(
+                session.query(models.Phash)
+                .filter(models.Phash.value.in_(filter(lambda x: x, hash_group)))
+                .all())
         hash_list_ms_values = [x.value for x in hash_list_ms]
         not_in_db_hash_list = \
             [x for x in hash_list if x not in hash_list_ms_values]
         if not_in_db_hash_list:
+            logging.debug('insert phash')
             for hash_group in tqdm.tqdm(
                     list(models.grouper(not_in_db_hash_list, 1000))):
                 session.add_all(
                     [models.Phash(value=i) for i in hash_group if i])
                 session.flush
                 session.commit()
-        hash_list_ms = session.query(models.Phash) \
-            .filter(models.Phash.value.in_(hash_list)).all()
-        m.phashes = hash_list_ms
+        logging.debug('getting rest of phash')
+        for hash_group in tqdm.tqdm(
+                list(models.grouper(not_in_db_hash_list, 999))):
+            hash_list_ms.extend(
+                session.query(models.Phash) \
+                .filter(models.Phash.value.in_(filter(lambda x: x, hash_group))) \
+                .all())
+        m.phashes.extend(hash_list_ms)
         session.add(m)
         session.commit()
     if session.query(Checksum).count() > 1:
@@ -250,8 +263,7 @@ def image_url(filename):
 def checksum_duplicate(cid):
     m = DB.session.query(Checksum).filter_by(id=cid).first_or_404()
     res = get_duplicate(
-        DB.session, csm_m=m, triangle_lower=100, triangle_upper=300
-    )
+        DB.session, csm_m=m, triangle_lower=100, triangle_upper=300)
     dict_list = [x.to_dict() for x in res]
     list(map(
         lambda x: x.update({'url': url_for(
