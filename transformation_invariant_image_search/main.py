@@ -24,6 +24,7 @@ import cv2
 import flask
 import numpy as np
 import redis
+import tqdm
 from flask import (
     current_app,
     Flask,
@@ -33,15 +34,20 @@ from flask import (
     url_for,
 )
 
+from . import models
 from .keypoints import compute_keypoints
-from .phash import triangles_from_keypoints, hash_triangles
 from .models import (
     DB,
     Checksum,
     DATA_DIR,
     DEFAULT_IMAGE_DIR
 )
-from . import models
+from .phash import (
+    triangles_from_keypoints,
+    hash_triangles,
+    TRIANGLE_LOWER,
+    TRIANGLE_UPPER,
+)
 
 
 __version__ = '0.0.1'
@@ -75,6 +81,95 @@ def phash_triangles(img, triangles, batch_size=None):
             results += result
 
     return results
+
+
+def get_duplicate(
+        session, filename=None, csm_m=None, img_dir=DEFAULT_IMAGE_DIR,
+        triangle_lower=TRIANGLE_LOWER, triangle_upper=TRIANGLE_UPPER):
+    """Get duplicate data.
+    >>> import tempfile
+    >>> from . import main
+    >>> filename1 = 'fullEndToEndDemo/inputImages/cat_original.png'
+    >>> filename2 = 'fullEndToEndDemo/inputImages/cat1.png'
+    >>> filename3 = 'fullEndToEndDemo/inputImages/mona.jpg'
+    >>> image_fd = tempfile.mkdtemp()
+    >>> app = main.create_app(db_uri='sqlite://')
+    >>> app.app_context().push()
+    >>> DB.create_all()
+    >>> triangle_lower = 100
+    >>> triangle_upper = 300
+    >>> # Get duplicate from image filename
+    >>> get_duplicate(
+    ...     DB.session, filename1,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
+    []
+    >>> # Get duplicate from checksum model
+    >>> m = DB.session.query(Checksum).filter_by(id=1).first()
+    >>> get_duplicate(
+    ...     DB.session, csm_m=m,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
+    []
+    >>> len(m.phashes) > 0
+    True
+    >>> get_duplicate(
+    ...     DB.session, filename2,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
+    [<Checksum(v=54abb6e, ext=png, trash=False)>]
+    >>> get_duplicate(DB.session, csm_m=m, triangle_lower=triangle_lower)
+    [<Checksum(v=4aba099, ext=png, trash=False)>]
+    >>> get_duplicate(
+    ...     DB.session, filename3,
+    ...     triangle_lower=triangle_lower, triangle_upper=triangle_upper)
+    []
+    """
+    if csm_m is not None and filename is not None:
+        raise ValueError('Only either checksum model or filename is required')
+    if csm_m:
+        m, created = csm_m, False
+    else:
+        m, created = models.get_or_create_checksum_model(
+            session, filename, img_dir=img_dir)
+    res = []
+    if created:
+        session.add(m)
+        session.commit()
+    hash_list = None
+    if not m.phashes:
+        if filename:
+            img = cv2.imread(filename)
+        else:
+            img = cv2.imread(get_image_path(m.value, m.ext, img_dir))
+        keypoints = compute_keypoints(img)
+        triangles = triangles_from_keypoints(
+            keypoints, lower=triangle_lower, upper=triangle_upper)
+        hash_list = []
+        for triangle in tqdm.tqdm(triangles):
+            hashes = hash_triangles(img, [triangle])
+            hash_list.extend(hashes)
+        hash_list = set(hash_list)  # deduplicate hash_list
+        hash_list_ms = session.query(models.Phash) \
+            .filter(models.Phash.value.in_(hash_list)).all()
+        hash_list_ms_values = [x.value for x in hash_list_ms]
+        not_in_db_hash_list = \
+            [x for x in hash_list if x not in hash_list_ms_values]
+        if not_in_db_hash_list:
+            for hash_group in tqdm.tqdm(
+                    list(models.grouper(not_in_db_hash_list, 1000))):
+                session.add_all(
+                    [models.Phash(value=i) for i in hash_group if i])
+                session.flush
+                session.commit()
+        hash_list_ms = session.query(models.Phash) \
+            .filter(models.Phash.value.in_(hash_list)).all()
+        m.phashes = hash_list_ms
+        session.add(m)
+        session.commit()
+    if session.query(Checksum).count() > 1:
+        res = session.query(Checksum).join(models.Phash.checksums) \
+            .distinct(Checksum.id) \
+            .filter(models.Phash.checksums.any(Checksum.value == m.value)) \
+            .filter(Checksum.id != m.id).all()
+    return res
 
 
 def pipeline(r, data, chunk_size):
