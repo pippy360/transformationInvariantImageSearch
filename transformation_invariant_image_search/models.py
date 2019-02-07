@@ -159,7 +159,7 @@ def grouper(iterable, n, fillvalue=None):
 
 
 def get_duplicate(
-        session, filename, img_dir=DEFAULT_IMAGE_DIR,
+        session, filename=None, csm_m=None, img_dir=DEFAULT_IMAGE_DIR,
         triangle_lower=TRIANGLE_LOWER, triangle_upper=TRIANGLE_UPPER):
     """Get duplicate data.
     >>> import tempfile
@@ -171,20 +171,29 @@ def get_duplicate(
     >>> app.app_context().push()
     >>> DB.create_all()
     >>> triangle_lower = 100
+    >>> # Get duplicate from image filename
     >>> get_duplicate(DB.session, filename1, triangle_lower=triangle_lower)
     []
+    >>> # Get duplicate from checksum model
     >>> m = DB.session.query(Checksum).filter_by(id=1).first()
-    >>> len(m.phashes)
+    >>> get_duplicate(DB.session, csm_m=m, triangle_lower=triangle_lower)
+    []
+    >>> len(m.phashes)  # count phash
     15211
     >>> get_duplicate(DB.session, filename2, triangle_lower=triangle_lower)
     [<Checksum(v=54abb6e, ext=png, trash=False)>]
     """
+    if csm_m is not None and filename is not None:
+        raise ValueError('Only either checksum model or filename is required')
+    if csm_m:
+        m, created = csm_m, False
+    else:
+        m, created = get_or_create_checksum_model(session, filename, img_dir=img_dir)
     res = []
-    m, created = get_or_create_checksum_model(session, filename, img_dir=img_dir)
     if created:
         session.add(m)
         session.commit()
-    if not m.triangle_phashes:
+    if not m.phashes:
         img = cv2.imread(filename)
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(keypoints, lower=triangle_lower, upper=triangle_upper)
