@@ -142,11 +142,7 @@ def get_duplicate(
         keypoints = compute_keypoints(img)
         triangles = triangles_from_keypoints(
             keypoints, lower=triangle_lower, upper=triangle_upper)
-        hash_list = []
-        for triangle in tqdm.tqdm(triangles):
-            hashes = hash_triangles(img, [triangle])
-            hash_list.extend(hashes)
-        hash_list = set(hash_list)  # deduplicate hash_list
+        hash_list = set(phash_triangles(img, triangles))
         hash_list_ms = session.query(models.Phash) \
             .filter(models.Phash.value.in_(hash_list)).all()
         hash_list_ms_values = [x.value for x in hash_list_ms]
