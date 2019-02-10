@@ -190,7 +190,7 @@ def pipeline(r, data, chunk_size):
         yield pipe, chunk
 
 
-def insert(chunks, filename):
+def insert_(chunks, filename):
     n = 0
 
     for pipe, keys in chunks:
@@ -202,7 +202,7 @@ def insert(chunks, filename):
     print(f'added {n} fragments for {filename}')
 
 
-def lookup(chunks, filename):
+def lookup_(chunks, filename):
     count = Counter()
 
     for pipe, keys in chunks:
@@ -389,7 +389,7 @@ def lookup(image):
 
 
 def main(command, filenames):
-    command = insert if command == 'insert' else lookup
+    command = insert_ if command == 'insert' else lookup_
 
     r = redis.StrictRedis(host='localhost', port=6379, db=0)
     try:
