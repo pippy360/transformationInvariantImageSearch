@@ -1,5 +1,4 @@
-For more information you can check out the discussion here on Hacker News: 
-https://news.ycombinator.com/item?id=14973741
+For more information you can check out the discussion here on [Hacker News](https://news.ycombinator.com/item?id=14973741)
 
 # Transformation-Invariant Reverse Image Search 
 
