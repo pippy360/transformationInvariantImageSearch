@@ -1,3 +1,5 @@
+For more information you can check out the discussion here on [Hacker News](https://news.ycombinator.com/item?id=14973741)
+
 # Transformation-Invariant Reverse Image Search 
 
 This repo demos a reverse image search algorithm which performs 2D affine transformation-invariant partial image-matching in sublinear time with respect to the number of images in our database.
