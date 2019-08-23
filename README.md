@@ -29,25 +29,23 @@ Instead of running these commands manually you can run the ./setup.sh script whi
 
 Or if you want to run the commands manually...
 
-```
-# From the root of the repo go to ./fullEndToEndDemo
-cd ./fullEndToEndDemo
-
-# Grab all the dependencies, this install is pretty huge
-sudo apt-get update
-sudo apt-get install git cmake g++ redis-server libboost-all-dev libopencv-dev python-opencv python-numpy python-scipy -y
-
-#Make it
-cmake .
-make
-
-# This step is optional. It removes a pointless annoying error opencv spits out
-# About: https://stackoverflow.com/questions/12689304/ctypes-error-libdc1394-error-failed-to-initialize-libdc1394
-sudo ln /dev/null /dev/raw1394
-
-# Then run either ./runDemo1.sh or ./runDemo2.sh to run the demo
-
-
+```console
+$ # From the root of the repo go to ./fullEndToEndDemo
+$ cd ./fullEndToEndDemo
+$ 
+$ # Grab all the dependencies, this install is pretty huge
+$ sudo apt-get update
+$ sudo apt-get install git cmake g++ redis-server libboost-all-dev libopencv-dev python-opencv python-numpy python-scipy -y
+$ 
+$ #Make it
+$ cmake .
+$ make
+$ 
+$ # This step is optional. It removes a pointless annoying error opencv spits out
+$ # About: https://stackoverflow.com/questions/12689304/ctypes-error-libdc1394-error-failed-to-initialize-libdc1394
+$ sudo ln /dev/null /dev/raw1394
+$ 
+$ # Then run either ./runDemo1.sh or ./runDemo2.sh to run the demo
 ```
 
 # Python setup
@@ -58,19 +56,19 @@ This setup was tested on a newly deployed vm on Ubuntu 18.04 LTS, YMMV on differ
 
 To use python package, do the following:
 
+```console
+$ sudo apt-get update
+$ sudo apt-get install python3-pip python3-opencv redis-server -y
+$ 
+$ # On some systems this path is missing
+$ # read more here: https://github.com/pypa/pip/issues/3813
+$ PATH="$PATH:~/.local/bin"
+$ 
+$ # cd to project directory
+$ pip3 install .
 ```
-sudo apt-get update
-sudo apt-get install python3-pip python3-opencv redis-server -y
 
-# On some systems this path is missing
-# read more here: https://github.com/pypa/pip/issues/3813
-PATH="$PATH:~/.local/bin"
-
-#cd to project directory
-pip3 install .
-```
-
-You also need install redis.
+if you got permission error, install it under virtual env or use `--user` flag.
 
 # Demo 1
 
@@ -94,8 +92,8 @@ The demo takes <s>2 minutes</s> (1 minute 38 seconds*) to run on a quad core VM 
 
 *Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
-```
-user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo1.sh 
+```console
+$ time ./fullEndToEndDemo/runDemo1.sh 
 Loading image: inputImages/cat1.png ... done
 Added 46725 image fragments to DB
 Loading image: inputImages/cat2.png ... done
@@ -135,8 +133,8 @@ sys     0m6.592s
 python example
 
 ```console
-$ time transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat*  && \
-  time transformation-invariant-image-search lookup fullEndToEndDemo/inputImages/cat_original.png
+$ time transformation-invariant-image-search insert fullEndToEndDemo/inputImages/cat*  &&  \
+$ time transformation-invariant-image-search lookup fullEndToEndDemo/inputImages/cat_original.png
 
 loading fullEndToEndDemo/inputImages/cat1.png
 100%|██| 3/3 [00:07<00:00,  2.66s/it]
@@ -219,8 +217,8 @@ Here the two images mona.jpg and van_gogh.jpg are inserted into the database and
 
 *Thanks to [meowcoder](https://github.com/meowcoder) for the speed up!
 
-```
-user@instance-1:~/transformationInvariantImageSearch/fullEndToEndDemo$ time ./runDemo2.sh 
+```console
+$ time ./fullEndToEndDemo/runDemo2.sh 
 Loading image: ./inputImages/mona.jpg ... done
 Added 26991 image fragments to DB
 Loading image: ./inputImages/van_gogh.jpg ... done
@@ -239,8 +237,9 @@ sys     0m18.224s
 python example
 
 ```console
-$ time transformation-invariant-image-search insert ./fullEndToEndDemo/inputImages/mona.jpg ./fullEndToEndDemo/inputImages/van_gogh.jpg && \
-  time transformation-invariant-image-search lookup ./fullEndToEndDemo/inputImages/monaComposite.jpg
+$ time transformation-invariant-image-search insert \
+$ ./fullEndToEndDemo/inputImages/mona.jpg ./fullEndToEndDemo/inputImages/van_gogh.jpg && \
+$ time transformation-invariant-image-search lookup ./fullEndToEndDemo/inputImages/monaComposite.jpg
 
 loading ./fullEndToEndDemo/inputImages/mona.jpg
 100%|███| 3/3 [00:03<00:00,  1.24s/it]

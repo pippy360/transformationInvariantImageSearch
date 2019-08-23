@@ -1,0 +1,79 @@
+{% extends 'admin/master.html' %}
+
+{% block head %}
+{{ super() }}
+<link href="data:image/x-icon;base64,AAABAAEAEBAAAAAAAABoBQAAFgAAACgAAAAQAAAAIAAAAAEACAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAD///8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=" rel="icon" type="image/x-icon" />
+{% endblock %}
+
+{% block body %}
+<div class="col-md-12">
+  <form method="post" action="" enctype="multipart/form-data" id="myform">
+    <div class="form-group col-md-10">
+      <label for="file">File input</label>
+      <input type="file" id="file" name="file" class="btn btn-default"/>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="file">Upload</label>
+      <br>
+      <button type="button" onclick="uploadFile()" class="button btn btn-default" id="but_upload">
+        <span class="glyphicon glyphicon-upload"></span>
+      </button>
+    </div>
+  </form>
+</div>
+<br>
+<div class='preview col-md-3'>
+  <img class="img-responsive center-block" style="max-height:230px;max-height:230px" id="img">
+</div>
+<script>
+{# modified from 
+"https://stackoverflow.com/a/8758614/1766261"
+#}
+function uploadFile(){
+  $(".preview img").hide(); // Display image element
+  $(".result-preview").remove();  // remove last result
+  $.ajax({
+    // Your server script to process the upload
+    url: "{{url_for('image_list')}}",
+    type: 'POST',
+    // Form data
+    data: new FormData($('form')[0]),
+
+    // Tell jQuery not to process data or worry about content-type
+    // You *must* include these options!
+    cache: false,
+    contentType: false,
+    processData: false,
+
+    // on success
+    success: function(data){
+      $("#img").attr("src", data["url"][0]); 
+      $(".preview img").show(); // Display image element
+      $("#but_upload").addClass("disabled")
+      getDuplicate(data)
+    },
+  });
+};
+function getDuplicate(data){
+  var dupsEndpoint = "{{url_for('checksum_list')}}/" + data['id'] + '/duplicate'
+  $.ajax({
+    // Your server script to process the upload
+    url: dupsEndpoint,
+    type: 'GET',
+    // on success
+    success: function(resData){
+      console.log(resData)
+      $.each(resData, function(index, element){
+        var newDiv = "<div class='result-preview col-md-3'>"
+        newDiv += "<img class='img-responsive center-block' style='max-height:230px;max-width:230px'"
+        newDiv += "src='" + element["url"] + "'>"
+        newDiv += "</div>"
+        $(".preview").after(newDiv);
+      });
+    },
+  }).done(function(){
+    $("#but_upload").removeClass("disabled")
+  });
+};
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+language: python
+python:
+  - "3.6"
+# command to install dependencies
+install:
+  - python setup.py develop
+# command to run tests
+script:
+  - pytest --doctest-module
